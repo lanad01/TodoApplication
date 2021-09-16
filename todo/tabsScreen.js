@@ -1,11 +1,10 @@
-import React from 'react';
+import React, {useState} from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Text } from 'react-native'
-import { HomeStackScreen } from './screen/profilescreen';
+import { Image } from 'react-native'
 import { Todo } from './screen/todoscreen';
-import { useState } from 'react/cjs/react.development';
 import { TodoContext } from './todoContext';
-import Icon from 'react-native-vector-icons'
+import { Profile2 } from './screen/profilescreen'
+import CameraView from './camera';
 
 const Tabs = createBottomTabNavigator();
 export const TabsScreen = () => {
@@ -61,9 +60,26 @@ export const TabsScreen = () => {
 
   return (
     <TodoContext.Provider value={todoContext}>
-      <Tabs.Navigator initialRouteName="To do">
-        <Tabs.Screen name="Profile" component={HomeStackScreen} headerShown={false}/>
-        <Tabs.Screen name="To do" component={Todo} headerShown={false} />
+      <Tabs.Navigator initialRouteName="To do" >
+        <Tabs.Screen name="Profile" component={Profile2} headerShown={false} 
+        options={{ tabBarBadge : 3 , 
+          tabBarIcon: ( { } ) => { 
+            return (
+              <Image source={require('./assets/winter.jpg')} style={{width:30, height:20}}/>
+            );
+          } 
+        }}
+        />
+        <Tabs.Screen name="To do" component={Todo} headerShown={false} 
+        options={{ tabBarBadge : 3 , 
+          tabBarIcon: ( {  } ) => { 
+            return (
+              <Image source={require('./assets/128x128.png')} style={{width:30, height:30}}/>
+            );
+          } 
+        }}
+        />
+        <Tabs.Screen name="camera" component={CameraView} headerShown={false}/>
       </Tabs.Navigator>
     </TodoContext.Provider>
   );

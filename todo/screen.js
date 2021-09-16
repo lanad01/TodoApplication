@@ -1,116 +1,77 @@
-import React from "react";
-import { View, Text, StyleSheet, Button } from "react-native";
+'use strict';
+import React, { PureComponent } from 'react';
+import { AppRegistry, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { RNCamera } from 'react-native-camera';
+import CameraRoll from "@react-native-community/cameraroll";
 
-import { AuthContext } from "./context";
+export default class ExampleApp extends PureComponent {
+  render() {
+    return (
+      <View style={styles.container}>
+        <RNCamera
+          ref={ref => {
+            this.camera = ref;
+          }}
+          captureAudio={false}
+          style={styles.preview}
+          type={RNCamera.Constants.Type.back}
+          flashMode={RNCamera.Constants.FlashMode.on}
+          androidCameraPermissionOptions={{
+            title: 'Permission to use camera',
+            message: 'We need your permission to use your camera',
+            buttonPositive: 'Ok',
+            buttonNegative: 'Cancel',
+          }}
+          androidRecordAudioPermissionOptions={{
+            title: 'Permission to use audio recording',
+            message: 'We need your permission to use your audio',
+            buttonPositive: 'Ok',
+            buttonNegative: 'Cancel',
+          }}
+          onGoogleVisionBarcodesDetected={({ barcodes }) => {
+            console.log(barcodes);
+          }}
+        />
+        <View style={{ flex: 0, flexDirection: 'row', justifyContent: 'center' }}>
+          <TouchableOpacity onPress={this.takePicture.bind(this)} style={styles.capture}>
+            <Text style={{ fontSize: 14 }}> SNAP </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
+
+  takePicture = async () => {
+    if (this.camera) {
+      const options = { quality: 0.5, base64: true };
+      const data = await this.camera.takePictureAsync(options);
+      console.log(data.uri);
+      if(data){
+          const result = CameraRoll.save(data.uri)
+          alert(result)
+      }  
+    }
+  };
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center"
+    flexDirection: 'column',
+    backgroundColor: 'black',
   },
-  button: {
+  preview: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+  capture: {
+    flex: 0,
+    backgroundColor: '#fff',
+    borderRadius: 5,
+    padding: 15,
     paddingHorizontal: 20,
-    paddingVertical: 10,
-    marginVertical: 10,
-    borderRadius: 5
-  }
+    alignSelf: 'center',
+    margin: 20,
+  },
 });
-
-const ScreenContainer = ({ children }) => (
-  <View style={styles.container}>{children}</View>
-);
-
-export const Home = ({ navigation }) => (
-  <ScreenContainer>
-    <Text>Master List Screen</Text>
-    <Button
-      title="React Native by Example"
-      onPress={() =>
-        navigation.push("Details", { name: "React Native by Example " })
-      }
-    />
-    <Button
-      title="React Native School"
-      onPress={() =>
-        navigation.push("Details", { name: "React Native School" })
-      }
-    />
-    <Button title="Drawer" onPress={() => navigation.toggleDrawer()} />
-  </ScreenContainer>
-);
-
-export const Details = ({ route }) => (
-  <ScreenContainer>
-    <Text>Details Screen</Text>
-    {route.params.name && <Text>{route.params.name}</Text>}
-  </ScreenContainer>
-);
-
-export const Search = ({ navigation }) => (
-  <ScreenContainer>
-    <Text>Search Screen</Text>
-    <Button title="Search 2" onPress={() => navigation.push("Search2")} />
-    <Button
-      title="React Native School"
-      onPress={() => {
-        navigation.navigate("Home", {
-          screen: "Details",
-          params: { name: "React Native School" }
-        });
-      }}
-    />
-  </ScreenContainer>
-);
-
-export const Search2 = () => (
-  <ScreenContainer>
-    <Text>Search2 Screen</Text>
-  </ScreenContainer>
-);
-
-export const Profile = ({ route, navigation }) => {
-  const { signOut } = React.useContext(AuthContext);
-  const { entryUserName } = route.params;
-  return (
-    <ScreenContainer>
-      <Text>Profile Screen</Text>
-      
-      <Text style={{fontSize:27}}> 엔트리 유저네임 :  {entryUserName} </Text>
-      <Button title="Drawerdddd" onPress={() => navigation.toggleDrawer()} />
-      <Button title="Sign Out" onPress={() => signOut()} />
-    </ScreenContainer>
-  );
-};
-
-export const Splash = () => (
-  <ScreenContainer>
-    <Text>Loading...</Text>
-  </ScreenContainer>
-);
-
-export const SignIn = ({ navigation }) => {
-  const { signIn } = React.useContext(AuthContext);
-
-  return (
-    <ScreenContainer>
-      <Text>Sign In Screen</Text>
-      <Button title="Sign In" onPress={() => signIn()} />
-      <Button
-        title="Create Account"
-        onPress={() => navigation.push("CreateAccount")}
-      />
-    </ScreenContainer>
-  );
-};
-
-export const CreateAccount = () => {
-  const { signUp } = React.useContext(AuthContext);
-
-  return (
-    <ScreenContainer>
-      <Text>Create Account Screen</Text>
-      <Button title="Sign Up" onPress={() => signUp()} />
-    </ScreenContainer>
-  );
-};
