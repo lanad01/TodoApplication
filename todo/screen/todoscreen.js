@@ -7,6 +7,7 @@ import {
   TextInput,
   TouchableOpacity
 } from 'react-native';
+import GestureRecognizer, {  swipeDirections,} from 'react-native-swipe-gestures';
 import {format} from 'date-fns';
 import Modal from "react-native-modal";
 import { Picker } from '@react-native-picker/picker';
@@ -16,8 +17,8 @@ import { AuthContext } from '../context';
 import TodoList_v2 from './todoList_v2'
 import { TodoContext } from '../todoContext';
 
-export const Todo = () => {
-  const { signOut } = React.useContext(AuthContext);
+export const Todo = ( {navigation}) => {
+  // const { signOut } = React.useContext(AuthContext);
   // const [userName, setUserName] = useState();
   const authContext = React.useContext(AuthContext);
   const todoContext = React.useContext(TodoContext);
@@ -44,7 +45,36 @@ export const Todo = () => {
   const exitModal = () => { // Task추가 모달창 Off
     setModal(!modal);
   }
+
+  // Gesture Recognizer 
+  const config = { velocityThreshold: 0.5, directionalOffsetThreshold: 80 };
+
+  function onSwipe(gestureName, gestureState) {
+    const { SWIPE_UP, SWIPE_DOWN, SWIPE_LEFT, SWIPE_RIGHT } = swipeDirections;
+    switch (gestureName) {
+      case SWIPE_RIGHT:
+        navigation.navigate("Profile");
+        break;
+      case SWIPE_UP:
+        console.log(gestureName)
+        break;
+      case SWIPE_DOWN:
+        console.log(gestureName)
+        break;
+      case SWIPE_LEFT:
+        console.log(gestureState)
+        break;
+    }
+  }
   return (
+    <GestureRecognizer
+      style={{ height:"100%"}}
+      onSwipe={(direction, state) => onSwipe(direction, state)}
+      onSwipeUp={state => state}
+      onSwipeDown={state => state}
+      onSwipeLeft={state => state}
+      onSwipeRight={state => state}
+      config={config}>
     <View style={styles.container}>
       <View>
         <Text style={styles.headerText}> To Do List Application</Text>
@@ -61,11 +91,11 @@ export const Todo = () => {
             <Image source={require('../assets/add.png')} />
           </TouchableOpacity>
       <TodoList_v2 />
-      <View style={styles.logoutBtn}>
+      {/* <View style={styles.logoutBtn}>
         <TouchableOpacity style={styles.btn} onPress={() => signOut()}>
           <Text style={styles.btnTxt}> Sign Out</Text>
         </TouchableOpacity>
-      </View>
+      </View> */}
       <Modal isVisible={modal} avoidKeyboard={true} transparent={true} >
         <View style={styles.addModal}>
           <Text style={styles.modalheader}> New Task </Text>
@@ -112,6 +142,7 @@ export const Todo = () => {
         </View>
       </Modal>
     </View>
+    </GestureRecognizer>
   );
 };
 

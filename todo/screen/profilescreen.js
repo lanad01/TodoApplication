@@ -1,42 +1,174 @@
 import React, { useState } from 'react';
-import { Button, View } from 'react-native'; 
-import { RNCamera } from 'react-native-camera';
-import CameraRoll from '@react-native-community/cameraroll';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TextInput,
+  TouchableOpacity,
+} from 'react-native';
+import GestureRecognizer, {
+  swipeDirections,
+} from 'react-native-swipe-gestures';
+import { AuthContext } from '../context';
 
+export const Profile = ({ navigation }) => {
+  const authContext = React.useContext(AuthContext);
+  const config = { velocityThreshold: 0.5, directionalOffsetThreshold: 80 };
 
-export const Profile2 = ( { navigation }) => {
-
-  // const camera=React.useRef(); //
-  // // useRef 로 관리하는 변수는 값이 바뀐다고 해서 컴포넌트가 리렌더링되지 않습니다. 
-  // // 리액트 컴포넌트에서의 상태는 상태를 바꾸는 함수를 호출하고 나서 그 다음 렌더링 이후로 업데이트 된 상태를 조회 할 수 있는 반면,
-  // //  useRef 로 관리하고 있는 변수는 설정 후 바로 조회 할 수 있습니다.
-  // const takePicture = async () => {  //async 비동기 
-  //   if(camera.current){ // 
-  //     const options = {quality : 1 , base64: false, writeExif : false  }
-  //     const data = await camera.current.takePictureAsync(options); 
-  //     // 통신을 하는 코드 앞에 await , data는 await 뒤의 함수 로직이 값을 반환해야 동작
-
-  //     CameraRoll.save(data.uri);
-  //     alert(data.uri)
-  //   }
-  // } 
-  // const getPhotos = async () => {
-  //   try {
-  //     const {edges} = await CameraRoll.getPhotos({
-  //       first: 1,
-  //     });
-  //     console.log('📸', edges);
-  //   } catch (error) {
-  //     console.log('getPhoto', error);
-  //   }
-  // };
-  return(
-    <View>
-     
-      <View>
-      <Button title="camera" onPress={navigation.navigate("To do")}/>
-      <Button title="Gallery" />
+  function onSwipe(gestureName, gestureState) {
+    const { SWIPE_UP, SWIPE_DOWN, SWIPE_LEFT, SWIPE_RIGHT } = swipeDirections;
+    switch (gestureName) {
+      case SWIPE_RIGHT:
+        console.log(gestureName)
+        break;
+      case SWIPE_UP:
+        console.log(gestureName)
+        break;
+      case SWIPE_DOWN:
+        console.log(gestureName)
+        break;
+      case SWIPE_LEFT:
+        navigation.navigate("To do")
+        break;
+    }
+  }
+  return (
+    <GestureRecognizer
+      style={{ height:"100%"}}
+      onSwipe={(direction, state) => onSwipe(direction, state)}
+      onSwipeUp={state => state}
+      onSwipeDown={state => state}
+      onSwipeLeft={state => state}
+      onSwipeRight={state => state}
+      config={config}>
+      <View style={styles.container}>
+        <Text style={styles.headerText}>PROFILE</Text>
+        <View style={styles.overlap}>
+          <View style={styles.editImg}>
+            <Image source={require('../assets/edit.png')} style={{ width: 50, height: 50 }}
+            />
+          </View>
+          <View style={styles.profileBox}>
+            <Image
+              source={require('../assets/winter.jpg')}
+              style={styles.profileImage}
+            />
+            <Text style={styles.nameText}> {authContext.userName} </Text>
+            <Text style={styles.emailText}> swKwon@pine-patners </Text>
+          </View>
+        </View>
+        <View style={styles.bottom}>
+          <View style={styles.detailContainer}>
+            <Text style={styles.detailCategory}> ■ Register Date </Text>
+            <Text style={styles.detailContent}>  - 2021. 09 .27 </Text>
+          </View>
+          <View style={styles.detailContainer2}>
+            <Text style={styles.detailCategory}> ■ Job </Text>
+            <Text style={styles.detailContent}>  - Database Architecture  </Text>
+          </View>
+          <View style={styles.detailContainer2}>
+            <Text style={styles.detailCategory}> ■ City </Text>
+            <Text style={styles.detailContent}>  - North Carolina </Text>
+          </View>
+        </View>
       </View>
-    </View>
-  )
-}
+    </GestureRecognizer>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    backgroundColor: '#191970',
+    padding: 0,
+  },
+  headerText: {
+    fontFamily: 'BMJUA',
+    fontSize: 25,
+    color: 'white',
+    marginTop: 30,
+  },
+  nameText: {
+    fontFamily: 'BMJUA',
+    fontSize: 23,
+    marginTop: 10,
+  },
+  emailText: {
+    fontFamily: 'BMJUA',
+    fontSize: 15,
+    color: 'gray',
+    marginTop: 2,
+  },
+  overlap: {
+    marginTop: 40,
+    width: 300,
+    height: 200,
+    borderRadius: 25,
+    backgroundColor: 'white',
+    borderColor: '#191970',
+    borderWidth: 3,
+    position: 'absolute',
+    top: 80,
+    zIndex: 9999,
+    overflow: 'visible',
+    shadowColor: '#191970',
+    shadowOffset: {
+      width: 0,
+      height: 10,
+    },
+    shadowOpacity: 0.96,
+    shadowRadius: 11.14,
+
+    elevation: 17,
+  },
+  editImg: {
+    alignItems: 'flex-end',
+    marginRight: 10,
+    marginTop: 10,
+  },
+  profileBox: {
+    flex: 1,
+    alignContent: 'center',
+    alignItems: 'center',
+    alignSelf: 'center',
+    borderRadius: 100,
+    marginTop: 25,
+    position: 'absolute',
+  },
+  profileImage:{
+    borderRadius: 70,
+    width: 100,
+    height: 100,
+    borderColor: '#191970',
+    borderWidth: 5,
+  },
+  bottom: {
+    backgroundColor: 'white',
+    height: 550,
+    width: 350,
+    marginTop: 170,
+  },
+  detailContainer: {
+    marginTop: 120,
+    marginLeft:20
+  },
+  detailContainer2:{
+    marginLeft:20,
+    marginTop:10
+  },
+  detailCategory: {
+    fontFamily: 'BMJUA',
+    color: '#191970',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  detailContent:{
+    fontFamily: 'BMJUA',
+    color: '#191970',
+    fontSize: 18,
+    marginTop:10,
+    
+  },
+});

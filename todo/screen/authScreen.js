@@ -1,6 +1,5 @@
 import React from "react";
-import { Component } from "react";
-import { View, Text, StyleSheet, Button, TextInput } from "react-native";
+import { View, Text, StyleSheet, Button, TextInput, TouchableOpacity } from "react-native";
 import AsyncStorage from "@react-native-community/async-storage";
 
 import { AuthContext } from "../context";
@@ -15,6 +14,9 @@ export const signIn = ({ navigation }) => {
     nameUpdate(userName);
     signIn();
   }
+  const register = () => {
+    navigation.navigate("Assign")
+  }
   return (
     <View style={styles.container}>
       <Text style={styles.headerText}> 첫 방문이시네요!</Text>
@@ -25,7 +27,14 @@ export const signIn = ({ navigation }) => {
           onChangeText={text => setUserName(text)}
           placeholder="아무거나 입력해주세요." placeholderTextColor='white' placeholderStyle={{ fontFamily: 'BMJUA' }}
           maxLength={22} />
-        <Button title="등록" onPress={login} />
+          <TouchableOpacity onPress={login} 
+          style={{backgroundColor:'#AFEEEE', height:40, alignItems:'center', borderRadius:20, borderWidth:3, borderColor:'white'}}>
+            <Text style={{alignItems:'center', fontFamily:"BMJUA", fontSize:17, color:'#191970', marginTop:6}}> 로 그 인  </Text>  
+          </TouchableOpacity>
+          <TouchableOpacity onPress={register} 
+          style={{backgroundColor:'#AFEEEE', height:40, alignItems:'center', borderRadius:20, borderWidth:3, borderColor:'white', marginTop:20}}>
+            <Text style={{alignItems:'center', fontFamily:"BMJUA", fontSize:17, color:'#191970', marginTop:6}}> 회 원 가 입  </Text>  
+          </TouchableOpacity>
         <Text style={styles.showText}></Text>
         <Text style={styles.showText}></Text>
       </View>
