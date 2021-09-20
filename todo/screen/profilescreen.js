@@ -33,6 +33,9 @@ export const Profile = ({ navigation }) => {
         break;
     }
   }
+  function editProfile(){
+    navigation.navigate("ProfileEdit");
+  }
   return (
     <GestureRecognizer
       style={{ height:"100%"}}
@@ -43,12 +46,8 @@ export const Profile = ({ navigation }) => {
       onSwipeRight={state => state}
       config={config}>
       <View style={styles.container}>
-        <Text style={styles.headerText}>PROFILE</Text>
+        <Text style={styles.headerText}>프 로 필</Text>
         <View style={styles.overlap}>
-          <View style={styles.editImg}>
-            <Image source={require('../assets/edit.png')} style={{ width: 50, height: 50 }}
-            />
-          </View>
           <View style={styles.profileBox}>
             <Image
               source={require('../assets/winter.jpg')}
@@ -56,21 +55,25 @@ export const Profile = ({ navigation }) => {
             />
             <Text style={styles.nameText}> {authContext.userName} </Text>
             <Text style={styles.emailText}> swKwon@pine-patners </Text>
+            <TouchableOpacity onPress={editProfile} style={styles.editBox}>
+              <Text style={styles.editText }>  프로필 수정 </Text>
+            </TouchableOpacity>
           </View>
         </View>
         <View style={styles.bottom}>
           <View style={styles.detailContainer}>
             <Text style={styles.detailCategory}> ■ Register Date </Text>
-            <Text style={styles.detailContent}>  - 2021. 09 .27 </Text>
+            <Text style={styles.detailContent }>  - From DB </Text>
           </View>
           <View style={styles.detailContainer2}>
             <Text style={styles.detailCategory}> ■ Job </Text>
-            <Text style={styles.detailContent}>  - Database Architecture  </Text>
+            <Text style={styles.detailContent}>  - From DB  </Text>
           </View>
           <View style={styles.detailContainer2}>
             <Text style={styles.detailCategory}> ■ City </Text>
-            <Text style={styles.detailContent}>  - North Carolina </Text>
+            <Text style={styles.detailContent}>  - From DB </Text>
           </View>
+          
         </View>
       </View>
     </GestureRecognizer>
@@ -86,9 +89,10 @@ const styles = StyleSheet.create({
   },
   headerText: {
     fontFamily: 'BMJUA',
-    fontSize: 25,
+    fontSize: 33,
     color: 'white',
-    marginTop: 30,
+    marginTop: 20,
+    marginLeft:10,
   },
   nameText: {
     fontFamily: 'BMJUA',
@@ -102,9 +106,9 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   overlap: {
-    marginTop: 40,
+    marginTop: 10,
     width: 300,
-    height: 200,
+    height: 230,
     borderRadius: 25,
     backgroundColor: 'white',
     borderColor: '#191970',
@@ -123,11 +127,6 @@ const styles = StyleSheet.create({
 
     elevation: 17,
   },
-  editImg: {
-    alignItems: 'flex-end',
-    marginRight: 10,
-    marginTop: 10,
-  },
   profileBox: {
     flex: 1,
     alignContent: 'center',
@@ -144,11 +143,23 @@ const styles = StyleSheet.create({
     borderColor: '#191970',
     borderWidth: 5,
   },
+  editBox:{
+
+  },
+  editText:{
+    fontFamily: 'BMJUA',
+    color: '#191970',
+    fontSize: 17,
+    fontWeight: 'bold',
+    textDecorationLine:'underline',
+    marginTop:10,
+    marginRight:5
+  },
   bottom: {
     backgroundColor: 'white',
     height: 550,
     width: 350,
-    marginTop: 170,
+    marginTop: 190,
   },
   detailContainer: {
     marginTop: 120,

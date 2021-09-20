@@ -112,6 +112,7 @@ export const Todo = ( {navigation}) => {
                 mode="dropdown"
                 onValueChange={(priority)=> setPriority(priority)}
               >
+                <Picker.Item label="Option" value="미설정" />
                 <Picker.Item label="High" value="High" />
                 <Picker.Item label="Middle" value="Middle" />
                 <Picker.Item label="Low" value="Low" />

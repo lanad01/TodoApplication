@@ -1,38 +1,13 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 
 import { AuthContext } from "./context";
-import { signIn } from "./screen/authScreen";
 import { ActivityIndicator } from "react-native-paper";
 import { TabsScreen } from "./screen/tabsScreen"
-import assignscreen from "./screen/assignscreen";
-import assignscreen_photo from "./screen/assignscreen_photo"
-
-const AuthStack = createStackNavigator();
-const AuthStackScreen = () => {
-  return (
-    <AuthStack.Navigator>
-      <AuthStack.Screen name="SignIn" component={signIn} 
-      options={{ headerTitle: "Sign In", headerTitleStyle : { fontFamily:"BMJUA" } ,
-      headerStyle : { backgroundColor : '#E0FFFF' } }} />
-    </AuthStack.Navigator>
-  )
-};
-const AssignStack= createStackNavigator();
-const AssignStackScreen= () => {
-  return(
-    <AssignStack.Navigator>
-      <AssignStack.Screen name="Assign1st" component={assignscreen} 
-      options={{ headerTitle: "Assign", headerTitleStyle : { fontFamily:"BMJUA" } ,
-      headerStyle : { backgroundColor : '#E0FFFF' } }} />
-      <AssignStack.Screen name="Assign2nd" component={assignscreen_photo} 
-      options={{ headerShown: false , headerTitleStyle : { fontFamily:"BMJUA" } ,
-      headerStyle : { backgroundColor : '#E0FFFF' } }} />
-    </AssignStack.Navigator>
-  )
-}
-
+import SQLite from 'react-native-sqlite-storage';
+import { AuthStackScreen } from "./screen/authroot";
+import { AssignStackScreen } from "./screen/assignroot";
 
 const RootStack = createStackNavigator();
 const RootStackScreen = ({ userToken }) => { // 시작 스크린
@@ -56,6 +31,44 @@ const RootStackScreen = ({ userToken }) => { // 시작 스크린
 };
 
 export default () => {
+  const db = SQLite.openDatabase(
+    // SQLite.openDatabase({ 이름, 로케이션, 성공, 에러
+        // name : "testDB", createFromLocation : "~data/mydbfile.sqlite"}, okCallback,errorCallback);
+    { name: 'testDB3',
+      location: 'default',
+      // createFromLocation: '~www/Todo2.db',
+    }, () => {
+      console.log('Open은 success');
+    },error => { 
+      console.log('error');
+    },
+  );
+  useEffect(() => {
+    createTable();
+  }, []
+  );
+  const createTable = () => {
+    db.transaction(tx => {
+        tx.executeSql(
+            'CREATE TABLE IF NOT EXISTS user ('
+              +'user_no INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,'
+              +'id VARCHAR(30) NOT NULL,'
+              +'pwd VARCHAR(30) NOT NULL,'
+              +'name VARCHAR(30) NOT NULL,'
+              +'job VARCHAR(30),'
+              +'email VARCHAR(100),'
+              +'image VARCHAR(255),'
+              +'regi_date DATE default sysdate)'
+            ,
+            [],
+            (tx , res) => {
+                console.log("table created successfully");
+            }, error => {
+              console.log("Table unsuccessfully created")
+            }
+        );
+    });
+  };
   const [isLoading, setIsLoading] = React.useState(true);
   const [userToken, setUserToken] = React.useState(null);
   const [name, setName] =React.useState('i1nit');
@@ -82,12 +95,12 @@ export default () => {
     setTimeout(() => {
       setIsLoading(false);
     }, 1000);
+    
   }, []);
 
   if (isLoading) {
     return <ActivityIndicator color="white" size="large" />;
   }
-
   return (
     <AuthContext.Provider value={authContext}>
       <NavigationContainer>

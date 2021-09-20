@@ -1,7 +1,5 @@
 import React from "react";
 import { View, Text, StyleSheet, Button, TextInput, TouchableOpacity } from "react-native";
-import AsyncStorage from "@react-native-community/async-storage";
-
 import { AuthContext } from "../context";
 
 export const signIn = ({ navigation }) => {
@@ -10,6 +8,7 @@ export const signIn = ({ navigation }) => {
   const { nameUpdate } = React.useContext(AuthContext);
 
   const [userName, setUserName] = React.useState("");
+  const [ pwd, setPwd ] = React.useState("");
   const login = () => {
     nameUpdate(userName);
     signIn();
@@ -19,21 +18,27 @@ export const signIn = ({ navigation }) => {
   }
   return (
     <View style={styles.container}>
-      <Text style={styles.headerText}> 첫 방문이시네요!</Text>
-      <Text style={styles.headerText}> 이름을 등록해주세요!</Text>
+      <Text style={styles.headerText}> TO DO LIST</Text>
       <View style={styles.bodyContainer}>
         <TextInput
-          style={styles.textInput}
+          style={styles.idInput}
           onChangeText={text => setUserName(text)}
-          placeholder="아무거나 입력해주세요." placeholderTextColor='white' placeholderStyle={{ fontFamily: 'BMJUA' }}
-          maxLength={22} />
+          placeholder="아이디 입력해주세요." placeholderTextColor='#191970' 
+          maxLength={22} 
+        />
+        <TextInput
+          style={styles.pwdInput}
+          onChangeText={pwd => setPwd(pwd)} secureTextEntry={true}
+          placeholder="비밀번호를 입력해주세요" placeholderTextColor='#191970' 
+          maxLength={22} 
+        />
           <TouchableOpacity onPress={login} 
-          style={{backgroundColor:'#AFEEEE', height:40, alignItems:'center', borderRadius:20, borderWidth:3, borderColor:'white'}}>
-            <Text style={{alignItems:'center', fontFamily:"BMJUA", fontSize:17, color:'#191970', marginTop:6}}> 로 그 인  </Text>  
+          style={{backgroundColor:'#AFEEEE', height:40, alignItems:'center', borderRadius:20, borderWidth:3, borderColor:'white', marginTop:30}}>
+            <Text style={{alignItems:'center', fontFamily:"BMJUA", fontSize:20, color:'#191970', marginTop:6}}> 로 그 인  </Text>  
           </TouchableOpacity>
           <TouchableOpacity onPress={register} 
           style={{backgroundColor:'#AFEEEE', height:40, alignItems:'center', borderRadius:20, borderWidth:3, borderColor:'white', marginTop:20}}>
-            <Text style={{alignItems:'center', fontFamily:"BMJUA", fontSize:17, color:'#191970', marginTop:6}}> 회 원 가 입  </Text>  
+            <Text style={{alignItems:'center', fontFamily:"BMJUA", fontSize:20, color:'#191970', marginTop:6}}> 회 원 가 입  </Text>  
           </TouchableOpacity>
         <Text style={styles.showText}></Text>
         <Text style={styles.showText}></Text>
@@ -54,8 +59,9 @@ const styles = StyleSheet.create({
   headerText: {
     paddingTop: 30,
     alignItems: 'center',
-    fontSize: 30,
+    fontSize: 38,
     color: 'white',
+    top:50,
     fontFamily: 'BMJUA',
   },
   bodyContainer: {
@@ -63,23 +69,39 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginVertical: 30,
     flex: 1,
-    width: 300
+    width: 300,
+    top:50,
   },
-  textInput: {
+  idInput: {
+    fontFamily:"BMJUA",
     marginTop: 20,
     marginBottom: 10,
     paddingHorizontal: 10,
     height: 60,
     borderRadius: 10,
-    borderColor: 'white',
+    backgroundColor:'white',
     borderWidth: 3,
-    color: 'white',
+    color: '#191970',
     fontSize: 19,
-
+  },
+  pwdInput:{
+    // fontFamily:"BMJUA",
+    marginTop: 20,
+    marginBottom: 10,
+    paddingHorizontal: 10,
+    height: 60,
+    borderRadius: 10,
+    backgroundColor:'#E6E6FA',
+    borderWidth: 3,
+    color: '#191970',
+    fontSize: 19,
   },
   showText: {
-    marginTop: 10,
+    marginTop: 30,
     fontSize: 25,
     color: 'white',
-  }
+  },
+  btn:{
+
+  },
 })
