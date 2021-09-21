@@ -12,7 +12,7 @@ import {format} from 'date-fns';
 import Modal from "react-native-modal";
 import { Picker } from '@react-native-picker/picker';
 import DatePicker from 'react-native-date-picker';
-
+import AsyncStorage from '@react-native-community/async-storage';
 import { AuthContext } from '../context';
 import TodoList_v2 from './todoList_v2'
 import { TodoContext } from '../todoContext';
@@ -20,9 +20,11 @@ import { TodoContext } from '../todoContext';
 export const Todo = ( {navigation}) => {
   // const { signOut } = React.useContext(AuthContext);
   // const [userName, setUserName] = useState();
+
+
   const authContext = React.useContext(AuthContext);
   const todoContext = React.useContext(TodoContext);
-
+  
   const [modal, setModal] = useState(false);
   const [open, setOpen] = useState(false); // 달력 모달 오픈
 
@@ -31,8 +33,6 @@ export const Todo = ( {navigation}) => {
   const [ exp, setExp ] = React.useState(new Date());
   var formatteddate=format(exp, "MMMM do EEE yyyy");
 
-
-  
   const register = () => { // Task 추가 등록
     todoContext.addTaskName(taskName);
     todoContext.addPriority(priority);
@@ -91,11 +91,6 @@ export const Todo = ( {navigation}) => {
             <Image source={require('../assets/add.png')} />
           </TouchableOpacity>
       <TodoList_v2 />
-      {/* <View style={styles.logoutBtn}>
-        <TouchableOpacity style={styles.btn} onPress={() => signOut()}>
-          <Text style={styles.btnTxt}> Sign Out</Text>
-        </TouchableOpacity>
-      </View> */}
       <Modal isVisible={modal} avoidKeyboard={true} transparent={true} >
         <View style={styles.addModal}>
           <Text style={styles.modalheader}> New Task </Text>

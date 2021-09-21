@@ -65,7 +65,7 @@ export default assignscreen_photo = ({route, navigation}) => {
     });
   }
   const { id, pwd, job, email } = route.params;
-  const insert = () => {
+  const finalize = () => {
     if(name === null){
       nameRef.current.focus();
       setNameIsNN(true);
@@ -103,7 +103,7 @@ export default assignscreen_photo = ({route, navigation}) => {
           AsyncStorage.setItem('user_no', JSON.stringify(user), () => { // user_no 변수로 user_no값이 들어가 있는 user 저장
             console.log('유저 id 저장');
           });
-          navigation.navigate("Auth")
+          navigation.replace("MainScreen")
         }, error => {
           console.log("Select Failed"+error)
         }
@@ -123,12 +123,6 @@ export default assignscreen_photo = ({route, navigation}) => {
         }
       )
     })
-  }
-  function finalize (){
-    // console.log(name);
-    // console.log(profileImage);
-    insert();
-
   }
   return (
     <KeyboardAvoidingView  contentContainerStyle={styles.scrollContainer} keyboardVerticalOffset={-200}
