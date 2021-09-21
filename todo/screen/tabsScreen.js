@@ -7,6 +7,7 @@ import { AuthContext } from '../context';
 import { Profile } from './profilescreen'
 import dummy from './dummyScreen' //Navigate 
 import { ProfileStackScreen } from './profileRoot';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const Tabs = createBottomTabNavigator();
 export const TabsScreen = ({ navigation }) => {
@@ -28,10 +29,11 @@ export const TabsScreen = ({ navigation }) => {
       {cancelable: false},
     );
   }
-  function outFromTab2(){
+  function outFromTab2(){ // 이 부분 큰 문제가 있다 지금
     console.log('success');
-    signOut();
-    navigation.navigate("Auth");
+    // signOut();
+    AsyncStorage.removeItem("user_no");
+    navigation.navigate("App");
   }
   const [ taskArray, setTaskArray] = useState([]);
   const [ priorityArray, setPriorityArray ] = useState([]);

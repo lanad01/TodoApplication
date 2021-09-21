@@ -1,16 +1,24 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
-
 import { AuthContext } from "./context";
 import { ActivityIndicator } from "react-native-paper";
 import { TabsScreen } from "./screen/tabsScreen"
 import SQLite from 'react-native-sqlite-storage';
 import { AuthStackScreen } from "./screen/authroot";
 import { AssignStackScreen } from "./screen/assignroot";
+import moment from "moment";
+import AsyncStorage from "@react-native-community/async-storage";
 
 const RootStack = createStackNavigator();
 const RootStackScreen = ({ userToken }) => { // 시작 스크린
+  const [login, setLogin]=useState(false); 
+  AsyncStorage.getItem('user_no', (err, res)=> {
+    console.log("user정보 : " +res);
+    if(res!=null){ setLogin(true); } //Login 정보 확인 성공
+    
+  })
+  if(login===true) userToken=true;
   return (
     <RootStack.Navigator screenOptions={{ headerShown: false }}>
       {userToken ? ( // userToken true 
@@ -32,11 +40,9 @@ const RootStackScreen = ({ userToken }) => { // 시작 스크린
 
 export default () => {
   const db = SQLite.openDatabase(
-    // SQLite.openDatabase({ 이름, 로케이션, 성공, 에러
-        // name : "testDB", createFromLocation : "~data/mydbfile.sqlite"}, okCallback,errorCallback);
-    { name: 'testDB3',
+    { name: 'testDB5',
       location: 'default',
-      // createFromLocation: '~www/Todo2.db',
+      createFromLocation: 2,
     }, () => {
       console.log('Open은 success');
     },error => { 
@@ -48,17 +54,18 @@ export default () => {
   }, []
   );
   const createTable = () => {
+    var date=
     db.transaction(tx => {
         tx.executeSql(
-            'CREATE TABLE IF NOT EXISTS user ('
+            'CREATE TABLE IF NOT EXISTS user_info ('
               +'user_no INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,'
               +'id VARCHAR(30) NOT NULL,'
               +'pwd VARCHAR(30) NOT NULL,'
               +'name VARCHAR(30) NOT NULL,'
               +'job VARCHAR(30),'
-              +'email VARCHAR(100),'
-              +'image VARCHAR(255),'
-              +'regi_date DATE default sysdate)'
+              +'email VARCHAR(100),'   
+              +'regi_date VARCHAR(100) default "'+moment().format('YYYY-MM-DD')
+              +'", image VARCHAR(255));'
             ,
             [],
             (tx , res) => {
@@ -71,7 +78,7 @@ export default () => {
   };
   const [isLoading, setIsLoading] = React.useState(true);
   const [userToken, setUserToken] = React.useState(null);
-  const [name, setName] =React.useState('i1nit');
+  const [name, setName] = React.useState('i1nit');
   const authContext = {
     userName: name,
     nameUpdate: (arg) => {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   View,
   Image,
@@ -6,34 +6,33 @@ import {
   Text,
   TouchableOpacity,
   TextInput,
-  KeyboardAvoidingView
+  KeyboardAvoidingView, Button
 } from 'react-native';
 import ImagePicker from 'react-native-image-crop-picker';
 import Modal from "react-native-modal";
 import SQLite from 'react-native-sqlite-storage';
-
+import moment from 'moment';
+import AsyncStorage from '@react-native-community/async-storage';
 
 export default assignscreen_photo = ({route, navigation}) => {
   const db = SQLite.openDatabase({
-    name: 'testDB3',
+    name: 'testDB5',
     location: 'default',
-    // createFromLocation: '~www/Todo2.db',
+    createFromLocation: 2,
   })
-  const { user_name, user_pwd, user_job, user_email } = route.params;
-  console.log("아이고난     "+user_name+user_pwd+user_job+user_email)
+  const nameRef = useRef();
   const [pictureSelected, setPicture] = useState(false);
-  const [profileImage, setProfileImage] = useState('exist');
-  const [ modalShow, setModal ] = useState(false);
+  const [profileImage, setProfileImage] = useState(null);
+  const [modalShow, setModal] = useState(false);
+  const [name, setName] = useState(null);
+  const [nameIsNull, setNameIsNN] = useState(false);
+
   function registerPhoto(){
       console.log(modalShow);
       setModal(!modalShow);
   }
   function pickOnePhoto() {
     ImagePicker.openPicker({
-      // width: 300,
-      // height: 400,
-      // compressImageQuality:1,
-      // cropping: true,
       cropping: true,
       width: 500,
       height: 500,
@@ -44,19 +43,13 @@ export default assignscreen_photo = ({route, navigation}) => {
       includeBase64: true
     }).then(image => {
       setPicture(true);
-      console.log(pictureSelected);
+      console.log("pictureSelectd : "+pictureSelected);
       setProfileImage(image.path);
       setModal(!modalShow);
     });
   }
   function callCamera() {
     ImagePicker.openCamera({
-      // width: 300,
-      // height: 400,
-      // cropping: true,
-      // compressImageQuality:1,
-      // compressImageMaxHeight:400,
-      // compressImageMaxWidth:300
       cropping: true,
       width: 500,
       height: 500,
@@ -69,36 +62,62 @@ export default assignscreen_photo = ({route, navigation}) => {
         setPicture(true);
         setProfileImage(image.path);
         setModal(!modalShow);
-
     });
   }
+  const { id, pwd, job, email } = route.params;
   const insert = () => {
+    if(name === null){
+      nameRef.current.focus();
+      setNameIsNN(true);
+    }else{
     db.transaction(tx => {
-      console.log(profileImage);
+      const current_time=moment().format('llll');
+      console.log(current_time);
       tx.executeSql(
-          'INSERT INTO user (image) VALUES ("VarcharValue")',
-          [],
+          'INSERT INTO user_info (id, pwd, job, name, email, image, regi_date) VALUES (?,?,?,?,?,?,?)',
+          [id,pwd,job,name,email,profileImage,current_time],
           (tx , res) => {
-              console.log("Insert successfully Done");
+              console.log("id : "+id);
+              console.log("pwd : "+pwd);
+              console.log("name : "+name);
+              console.log("job : "+job);
+              console.log("image : "+profileImage);
+              console.log("regi_date : "+current_time);
               select();
           }, error => {
             console.log("Insert Failed"+error);
           }
       );
-  });
+    });
+    }
   }
   const select = () => { 
+    db.transaction( (tx) => {
+      tx.executeSql(
+        'SELECT user_no FROM user_info WHERE id=?',
+        [id],
+        (tx,result) => {
+          console.log("select success")
+          var user=result.rows.item(0).user_no;
+          console.log("user_no : " + user);
+          AsyncStorage.setItem('user_no', JSON.stringify(user), () => { // user_no 변수로 user_no값이 들어가 있는 user 저장
+            console.log('유저 id 저장');
+          });
+          navigation.navigate("Auth")
+        }, error => {
+          console.log("Select Failed"+error)
+        }
+      )
+    })
+  }
+  const deleteData = () => {
     db.transaction(tx => {
       tx.executeSql(
-        'SELECT regi_date, image FROM user',
+        'DELETE FROM user_info',
         [],
         (tx,res) => {
-          var len=res.rows.length;
-          for(let i=0; i < len ; i++){
-          console.log(res.rows.item(i).regi_date)
-          console.log(res.rows.item(i).image)
-
-          }
+          console.log("DELETE 성공")
+          
         }, error => {
           console.log("Select Failed")
         }
@@ -109,12 +128,13 @@ export default assignscreen_photo = ({route, navigation}) => {
     // console.log(name);
     // console.log(profileImage);
     insert();
-    // navigation.navigate("Auth");
 
   }
   return (
     <KeyboardAvoidingView  contentContainerStyle={styles.scrollContainer} keyboardVerticalOffset={-200}
     behavior="position" >
+      
+      {/* <Button title="DDDDDDelete" onPress={deleteData}  style={{}} /> */}
         <View style={{ height:'5%', backgroundColor: '#191970' }} />
         <View style={styles.headContainer}>
           <Text style={styles.headerText}> 사진과 이름을 등록해주세요. {pictureSelected} </Text>
@@ -130,8 +150,8 @@ export default assignscreen_photo = ({route, navigation}) => {
           </TouchableOpacity>
         </View>
         <View style={styles.btmContainer}>
-          <TextInput  maxLength={10} backgroundColor="white"  placeholderTextColor="#dcdcdc"  style={styles.nameInput}
-           placeholder=" &nbsp;이름을 작성해주세요."
+          <TextInput  maxLength={10} backgroundColor="white"  placeholderTextColor={ nameIsNull ? "red" : "#dcdcdc"}  style={styles.nameInput}
+           placeholder=" &nbsp;이름을 작성해주세요." onChangeText={name => setName(name)} ref={nameRef} 
           />
           <Text style={styles.nameInfo}> 이름은 반드시 적어주셔야해요! </Text>
           <Text style={styles.Info}>
@@ -153,7 +173,8 @@ export default assignscreen_photo = ({route, navigation}) => {
                     <Text textAlign="center" style={styles.photochoose} >나 가 기 </Text>
                 </TouchableOpacity>       
             </View>
-            </Modal>
+          </Modal>
+
         </View>
        
     </KeyboardAvoidingView>
@@ -194,6 +215,7 @@ const styles = StyleSheet.create({
     fontFamily: 'BMJUA',
     fontSize: 23,
     color: '#191970',
+    paddingLeft:10,
     marginLeft: 4,
     marginTop:50,
   },

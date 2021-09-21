@@ -4,7 +4,7 @@ import { StyleSheet, TouchableOpacity, Text } from 'react-native';
 import { signIn } from "./authScreen";
 
 const AuthStack = createStackNavigator();
-export const AuthStackScreen = () => {
+export const AuthStackScreen = (  ) => {
   return (
     <AuthStack.Navigator>
       <AuthStack.Screen name="SignIn" component={signIn} 
