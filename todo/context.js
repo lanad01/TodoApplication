@@ -1,10 +1,13 @@
 import React from "react";
 
 export const AuthContext = React.createContext({
-    userName: 'default',
-    signIn: () => { },
-    signUp: () => { },
-    signOut: () => { },
-    nameUpdate: (arg) => {
-    },
+    userLogined : 'init',
+    id: '',
+    pwd:'',
+    name:'',
+    job:'',
+    email:'',
+    regi_date:'',
+    image:'',
+    
 });

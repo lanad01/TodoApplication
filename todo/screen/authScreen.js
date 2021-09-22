@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
   View,
   Text,
@@ -11,35 +11,41 @@ import Modal from "react-native-modal";
 import { AuthContext } from '../context';
 import SQLite from 'react-native-sqlite-storage';
 import AsyncStorage from '@react-native-community/async-storage';
+import { LoginErrorModal } from '../modal/loginErrorModal';
+import { IdPwdNotNullModal } from '../modal/IdPwdNotNullModal';
 
-export const authScreen = ({ navigation }) => {
+export const authScreen = ({ navigation }) => {  
   const db = SQLite.openDatabase({
     name: 'testDB5',
     location: 'default',
     createFromLocation: 2,
   })
   useEffect(() => {
-    
+    autoLogin();
     return () => {
     }
   }, [])
-  const [modalShow, setModal] = useState(false);
-  const exitModal = () => {
-    setModal(!modalShow);
+  const authContext = React.useContext(AuthContext);
+  const autoLogin = () => {
+    console.log("Auth Context : "+authContext.user_no);
   }
-  const auth = React.useContext(AuthContext);
+  const [loginErrorModal, setLoginErrorModal]=useState(false);
+  const modalOff = () => {
+    setLoginErrorModal(false);
+  }
+  const [loginNotNullModal, setLoginNotNullModal] = useState(false);
+  const loginNotNullModallOff = () => {
+    setLoginNotNullModal(false);
+  }
 
   const [id, setId] = React.useState(null);
   const [pwd, setPwd] = React.useState(null);
  
   const login = () => {
-    
-    // nameUpdate(userName);
-    // signIn();
     console.log("pwd : "+pwd+ " id : "+id)
     if(id === null || pwd=== null){ // id pwd 널값
-      setModal(!modalShow);
-    }
+      setLoginNotNullModal(true);
+    }else{
     db.transaction( (tx) => { //우선 id pwd 모든 박스를 가져온다
       tx.executeSql(
         'SELECT id FROM user_info WHERE id=?  ',
@@ -50,7 +56,8 @@ export const authScreen = ({ navigation }) => {
           var len=res.rows.length;
           console.log(len)
           if(len===0){
-            console.log("검색된 아이디가 없음")
+            console.log("검색된 아이디가 없음");
+            setLoginErrorModal(true);
           }else if(len>0){
             console.log("--검색된 아이디가 있음")
             db.transaction( (tx) => {
@@ -74,6 +81,7 @@ export const authScreen = ({ navigation }) => {
         }
       )
     })
+  }
   };
   const getUser_no = () => {
     db.transaction ( tx => {
@@ -81,11 +89,13 @@ export const authScreen = ({ navigation }) => {
         'SELECT user_no FROM user_info WHERE id=?',
         [id],
         (tx, res) => {
-          console.log("****user_no select 시작");
           var user_no=res.rows.item(0).user_no;
           console.log("user_no : "+user_no);
           AsyncStorage.setItem('user_no', JSON.stringify(user_no), () => { // user_no 변수로 user_no값이 들어가 있는 user 저장
-            console.log('유저 id 저장');
+            console.log('유저 id 저장 [ authScreen ] : '+ user_no);
+            authContext.userLogined=user_no;
+            console.log("auth Default :"+authContext.userLogined)
+            
           });
           navigation.replace("MainScreen")
         }
@@ -124,19 +134,8 @@ export const authScreen = ({ navigation }) => {
         <Text style={styles.showText}></Text>
         <Text style={styles.showText}></Text>
       </View>
-      <Modal isVisible={modalShow} avoidKeyboard={true} transparent={true}
-             style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-            <TouchableOpacity onPress={exitModal}>   
-            <View style={styles.outside}>
-                <View style={styles.validModal}>
-                  <Text style={styles.validText}> ID와 암호는 반드시 작성해주셔야합니다.</Text>
-                  <TouchableOpacity onPress={exitModal} style={styles.choicebox}>
-                    <Text textAlign="center" style={styles.photochoose} >나 가 기 </Text>
-                  </TouchableOpacity>  
-                </View>
-            </View>
-            </TouchableOpacity>  
-      </Modal>
+      <IdPwdNotNullModal modalOn={loginNotNullModal} modalOff={loginNotNullModallOff} />
+      <LoginErrorModal modalOn={loginErrorModal} modalOff={modalOff} />
     </View>
   );
 };

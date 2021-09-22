@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,19 +12,19 @@ import {format} from 'date-fns';
 import Modal from "react-native-modal";
 import { Picker } from '@react-native-picker/picker';
 import DatePicker from 'react-native-date-picker';
-import AsyncStorage from '@react-native-community/async-storage';
+import SQLite from 'react-native-sqlite-storage';
+
 import { AuthContext } from '../context';
 import TodoList_v2 from './todoList_v2'
 import { TodoContext } from '../todoContext';
 
 export const Todo = ( {navigation}) => {
-  // const { signOut } = React.useContext(AuthContext);
-  // const [userName, setUserName] = useState();
-
-
+  const db = SQLite.openDatabase({name: 'testDB5', location: 'default', createFromLocation: 2,})
+  
   const authContext = React.useContext(AuthContext);
   const todoContext = React.useContext(TodoContext);
-  
+  console.log("user_no arrived at todoScreen : "+authContext.userLogined);
+
   const [modal, setModal] = useState(false);
   const [open, setOpen] = useState(false); // 달력 모달 오픈
 
@@ -35,6 +35,7 @@ export const Todo = ( {navigation}) => {
 
   const register = () => { // Task 추가 등록
     todoContext.addTaskName(taskName);
+    console.log(todoContext.taskName) // init 출력
     todoContext.addPriority(priority);
     todoContext.addExp(formatteddate);
     setModal(!modal);
@@ -62,7 +63,7 @@ export const Todo = ( {navigation}) => {
         console.log(gestureName)
         break;
       case SWIPE_LEFT:
-        console.log(gestureState)
+        console.log("left")
         break;
     }
   }

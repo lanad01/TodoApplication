@@ -34,7 +34,7 @@ export const Profile = ({ navigation }) => {
     }
   }
   function editProfile(){
-    navigation.navigate("ProfileEdit");
+    navigation.replace("ProfileEdit");
   }
   return (
     <GestureRecognizer

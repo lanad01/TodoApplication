@@ -7,8 +7,9 @@ import { AuthContext } from '../context';
 import { ProfileStackScreen } from './profileRoot';
 import AsyncStorage from '@react-native-community/async-storage';
 
-const Tabs = createBottomTabNavigator();
-export const TabsScreen = ( props ) => {
+export const TabsScreen =  props  => {
+  const authContext = React.useContext(AuthContext);
+  console.log("AuthContext info arrived at tabs " +authContext.user_no);
   function outFromTab () {
     Alert.alert(
       '로그아웃하시겠습니까?',
@@ -70,17 +71,33 @@ export const TabsScreen = ( props ) => {
         }
     }
   };
-
+  const Tabs = createBottomTabNavigator();
   return (
     <TodoContext.Provider value={todoContext}>
       <Tabs.Navigator initialRouteName="To do"  >
-        
+        <Tabs.Screen name="Profile" component={ProfileStackScreen}  
+        options={{ tabBarBadge : 3 , tabBarActiveTintColor: "#00af9d" , 
+        tabBarLabelStyle : { fontFamily:"BMJUA", fontSize: 14, } ,headerStyle: { backgroundColor:'#E0ffff' } ,
+        headerTitleStyle:{ fontFamily:'BMJUA' }, 
+        headerRight: () => (
+          <TouchableOpacity style={styles.btnView} onPress={outFromTab}>
+           <Text style={styles.logoutBtn}>Logout</Text>
+          </TouchableOpacity>         ),
+          tabBarIcon: ({}) => {
+            return (
+              <Image source={require('../assets/winter.jpg')} style={{width:30, height:20}}/>
+            );
+          } 
+        }}
+        />
         <Tabs.Screen name="To do" component={Todo}
-        options={{ tabBarBadge : 3 ,  tabBarActiveTintColor: "#00af9d" , headerStyle: { backgroundColor:'#E0ffff' } ,
-        headerTitleStyle:{ fontFamily:'BMJUA' }, headerRight: () => (
+        options={{ tabBarBadge : 3 ,  tabBarActiveTintColor: "#00af9d" , 
+        headerTitleStyle:{ fontFamily:'BMJUA' }, headerStyle: { backgroundColor:'#E0ffff' } ,
+        headerRight: () => (
               <TouchableOpacity style={styles.btnView} onPress={outFromTab}>
                <Text style={styles.logoutBtn}>Logout</Text>
-             </TouchableOpacity>         ),
+             </TouchableOpacity>         
+             ),
           tabBarIcon: ( {  } ) => { 
             return (
               <Image source={require('../assets/128x128.png')} style={{width:30, height:30}}/>
@@ -88,17 +105,6 @@ export const TabsScreen = ( props ) => {
           } 
         }}
         />
-        <Tabs.Screen name="Profile" component={ProfileStackScreen} 
-        options={{ tabBarBadge : 3 , headerShown: false, tabBarActiveTintColor: "#00af9d" , 
-        tabBarLabelStyle : { fontFamily:"BMJUA", fontSize: 14,   } ,
-          tabBarIcon: ( { } ) => {
-            return (
-              <Image source={require('../assets/winter.jpg')} style={{width:30, height:20}}/>
-            );
-          } 
-        }}
-        />
-        
       </Tabs.Navigator>
     </TodoContext.Provider>
   );

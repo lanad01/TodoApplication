@@ -12,7 +12,7 @@ export const ProfileStackScreen= () => {
     return(
       <ProfileStack.Navigator initialRouteName="Profile1st">
         <ProfileStack.Screen name="Profile1st" component={Profile} 
-        options={{ headerTitle:"프로필", headerTitleStyle : { fontFamily:"BMJUA" } , 
+        options={{ headerTitle:"프로필", headerShown:false ,headerTitleStyle : { fontFamily:"BMJUA" } , 
         headerRight: () => (
             <TouchableOpacity style={styles.btnView}>
                <Text style={styles.logoutBtn}>Logout</Text>
@@ -25,6 +25,7 @@ export const ProfileStackScreen= () => {
              </TouchableOpacity>
             ),
             headerTitle: "프로필 수정", headerTitleStyle : { fontFamily:"BMJUA" } ,
+            headerShown:false,
             headerStyle : { backgroundColor : '#E0FFFF' } }} />
       </ProfileStack.Navigator>
     )
@@ -34,7 +35,6 @@ export const ProfileStackScreen= () => {
       fontFamily:'BMJUA',
       fontSize:18,
       color:'white',
-
     },
     btnView:{
       backgroundColor:'#191970', width:80, height:30,

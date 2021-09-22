@@ -11,7 +11,7 @@ import { Button, StyleSheet } from "react-native";
 import AsyncStorage from "@react-native-community/async-storage";
 import { authScreen } from "./screen/authScreen";
 
-export default () => {
+export default ({navigation}) => {
   const db = SQLite.openDatabase({ name: 'testDB5', location: 'default', createFromLocation: 2, } );
   const createTable = () => {
     db.transaction(tx => {
@@ -20,7 +20,7 @@ export default () => {
         [],
         (tx, res)=> {
           var len=res.rows.length;
-          if(len === 0){
+          if(len === 0){ 
             db.transaction(tx => {
               tx.executeSql(
                   'CREATE TABLE IF NOT EXISTS user_info ('
@@ -48,23 +48,23 @@ export default () => {
   };
   useEffect(() => {
     createTable();
-    loginValid();
   }, []
   );
   const [user_no, setUserNo] = useState(null);
-  const loginValid = () => {
-    AsyncStorage.getItem("user_no", (err, res) => {
-      console.log("Asyn get res : " +res);
-      if(res!=null){
-        console.log("res is not null")
-        setUserNo(res);
-        console.log(user_no); //null?
-      }
-    })
+  autoLogin = async () => { // 비동기 처리를 해야 나중에 받아온 자료로 setUser_no 설정이 가능해집니다.
+    try{
+      const loginedNo= await AsyncStorage.getItem("user_no");
+      setUserNo(loginedNo);
+    }catch(err){
+      console.log(err)
+    }
   }
+  console.log("Async에 저장된 userNo : " +user_no)
+ 
   const MainStack=createStackNavigator();
+  const authContext=React.useContext(AuthContext);
   return (
-    <AuthContext.Provider value={{}}>
+    <AuthContext.Provider value={authContext}>
       <NavigationContainer>
         <MainStack.Navigator initialRouteName="Auth" headerShown={false}>
           <MainStack.Screen name="MainScreen" component={TabsScreen} 
@@ -84,6 +84,3 @@ export default () => {
     </AuthContext.Provider>
   );
 };
-const styles = StyleSheet.create({
-  
-})

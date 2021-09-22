@@ -4,9 +4,14 @@ import moment from 'moment';
 import SQLite from 'react-native-sqlite-storage';
 import { create } from 'react-test-renderer';
 import { getTime } from 'date-fns';
+import { LoginErrorModal } from './modal/loginErrorModal';
 
 const KeyboardAvoidingComponent = () => {
   const [name, setName]=useState("KEIL")
+  const [ modal, setModal ]=useState(true);
+  const modalOff = () => {
+    setModal(false);
+  }
   const db = SQLite.openDatabase({
     name: 'testDB3',
     location: 'default',
@@ -101,6 +106,7 @@ const KeyboardAvoidingComponent = () => {
           <View style={styles.btnContainer}>
             <Button title="Submit" onPress={select} />
             <Button title="Delete" onPress={deleteData} style={{top:100}} />
+            <LoginErrorModal modalOn={modal} modalOff={modalOff} />
           </View>
         </View>
       </TouchableWithoutFeedback>
