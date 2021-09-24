@@ -14,8 +14,21 @@ import { AuthContext } from '../context';
 
 export const Profile = ({ navigation }) => {
   const authContext = React.useContext(AuthContext);
-  const config = { velocityThreshold: 0.5, directionalOffsetThreshold: 80 };
+  console.log("image path : "+authContext.image)
+  console.log("date 정보 : "+authContext.regi_date);
+  var strToDate = new Date(authContext.regi_date);
+   // console.log(strToDate);
+  var week = new Array('일', '월', '화', '수', '목', '금', '토');
+  var localTime = strToDate.toLocaleTimeString();
+  // console.log(localTime);
+  var year = strToDate.getFullYear();
+  var month = strToDate.getMonth()+1;
+  var day = strToDate.getDate();
+  var dayName = week[strToDate.getDay()];
+  var dateToKorean=year+'년 '+month+'월 '+day+'일 '+dayName+'요일 '+localTime.substring(0,5);
+  console.log(dateToKorean);
 
+  const config = { velocityThreshold: 0.5, directionalOffsetThreshold: 80 };
   function onSwipe(gestureName, gestureState) {
     const { SWIPE_UP, SWIPE_DOWN, SWIPE_LEFT, SWIPE_RIGHT } = swipeDirections;
     switch (gestureName) {
@@ -49,12 +62,10 @@ export const Profile = ({ navigation }) => {
         <Text style={styles.headerText}>프 로 필</Text>
         <View style={styles.overlap}>
           <View style={styles.profileBox}>
-            <Image
-              source={require('../assets/winter.jpg')}
-              style={styles.profileImage}
-            />
-            <Text style={styles.nameText}> {authContext.userName} </Text>
-            <Text style={styles.emailText}> swKwon@pine-patners </Text>
+            <Image source={ authContext.image != null ? {uri: authContext.image }: require('../assets/profile3.jpg')}
+              style={styles.profileImage}/>
+            <Text style={styles.nameText}> {authContext.name} </Text>
+            <Text style={styles.emailText}> {authContext.email === null ? authContext.emailNull : authContext.email } </Text>
             <TouchableOpacity onPress={editProfile} style={styles.editBox}>
               <Text style={styles.editText }>  프로필 수정 </Text>
             </TouchableOpacity>
@@ -63,11 +74,11 @@ export const Profile = ({ navigation }) => {
         <View style={styles.bottom}>
           <View style={styles.detailContainer}>
             <Text style={styles.detailCategory}> ■ Register Date </Text>
-            <Text style={styles.detailContent }>  - From DB </Text>
+            <Text style={styles.detailContent }>  -  {dateToKorean} </Text>
           </View>
           <View style={styles.detailContainer2}>
             <Text style={styles.detailCategory}> ■ Job </Text>
-            <Text style={styles.detailContent}>  - From DB  </Text>
+            <Text style={styles.detailContent}>  -  {authContext.job === null ? authContext.jobNull: authContext.job}  </Text>
           </View>
           <View style={styles.detailContainer2}>
             <Text style={styles.detailCategory}> ■ City </Text>
@@ -158,15 +169,16 @@ const styles = StyleSheet.create({
   bottom: {
     backgroundColor: 'white',
     height: 550,
-    width: 350,
-    marginTop: 190,
+    width: 390,
+    marginTop: 170,
+    borderRadius: 70,
   },
   detailContainer: {
     marginTop: 120,
-    marginLeft:20
+    marginLeft: 40
   },
   detailContainer2:{
-    marginLeft:20,
+    marginLeft:40,
     marginTop:10
   },
   detailCategory: {

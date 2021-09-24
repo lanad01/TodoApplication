@@ -9,7 +9,6 @@ import AsyncStorage from '@react-native-community/async-storage';
 
 export const TabsScreen =  props  => {
   const authContext = React.useContext(AuthContext);
-  console.log("AuthContext info arrived at tabs " +authContext.user_no);
   function outFromTab () {
     Alert.alert(
       '로그아웃하시겠습니까?',
@@ -27,49 +26,16 @@ export const TabsScreen =  props  => {
       {cancelable: false},
     );
   }
-  function outFromTab2(){ // 이 부분 큰 문제가 있다 지금
-    console.log('success');
+  function outFromTab2(){ 
     AsyncStorage.removeItem("user_no");
     console.log("로그아웃 실행")
     props.navigation.navigate("Auth")
   }
-  const [ taskArray, setTaskArray] = useState([]);
-  const [ priorityArray, setPriorityArray ] = useState([]);
-  const [ expArray, setExpArray ] = useState([]);
   const todoContext = {
-    userName: '',
-    taskName: 'init task',
-    priority: 'init prio',
-    expiration: 'init exp',
-    taskArray : taskArray,
-    priorityArray : priorityArray,
-    expArray : expArray,
-    addTaskName: arg => {
-        taskArray.push(arg);
-    },
-    addPriority: arg => {
-        if(arg!="High" && arg!="Middle" && arg!="Low") {
-            priorityArray.push("Middle")
-        }else{
-            priorityArray.push(arg);
-        }
-    },
-    addExp: arg => {
-        expArray.push(arg);
-    },
-    deleteTask : index => {
-        var taskCopy= [...taskArray]; //make a separate copy of the array
-        var priorityCopy = [...priorityArray];
-        var expCopy=[...expArray];
-        if(index !== -1) {
-            taskCopy.splice(index,1); // remove value of the index
-            priorityCopy.splice(index,1);
-            expCopy.splice(index,1);
-            setTaskArray(taskCopy); // and cover it to the origin
-            setPriorityArray(priorityCopy);
-            setExpArray(expCopy);
-        }
-    }
+    task_no:[],
+    task_name: [],
+    task_prior:[],
+    task_exp:[],
   };
   const Tabs = createBottomTabNavigator();
   return (

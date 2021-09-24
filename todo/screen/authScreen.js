@@ -13,6 +13,7 @@ import SQLite from 'react-native-sqlite-storage';
 import AsyncStorage from '@react-native-community/async-storage';
 import { LoginErrorModal } from '../modal/loginErrorModal';
 import { IdPwdNotNullModal } from '../modal/IdPwdNotNullModal';
+import { ErrorModal } from '../modal/ErrorModal';
 
 export const authScreen = ({ navigation }) => {  
   const db = SQLite.openDatabase({
@@ -20,15 +21,7 @@ export const authScreen = ({ navigation }) => {
     location: 'default',
     createFromLocation: 2,
   })
-  useEffect(() => {
-    autoLogin();
-    return () => {
-    }
-  }, [])
   const authContext = React.useContext(AuthContext);
-  const autoLogin = () => {
-    console.log("Auth Context : "+authContext.user_no);
-  }
   const [loginErrorModal, setLoginErrorModal]=useState(false);
   const modalOff = () => {
     setLoginErrorModal(false);
@@ -37,6 +30,8 @@ export const authScreen = ({ navigation }) => {
   const loginNotNullModallOff = () => {
     setLoginNotNullModal(false);
   }
+
+  const [pwdErrorModal, setPwdErrorModal]=useState(false);
 
   const [id, setId] = React.useState(null);
   const [pwd, setPwd] = React.useState(null);
@@ -51,15 +46,11 @@ export const authScreen = ({ navigation }) => {
         'SELECT id FROM user_info WHERE id=?  ',
         [id],
         (tx,res) => {
-          console.log("Select 분기 arrive")
-          console.log("ID : "+id);
           var len=res.rows.length;
-          console.log(len)
           if(len===0){
             console.log("검색된 아이디가 없음");
             setLoginErrorModal(true);
           }else if(len>0){
-            console.log("--검색된 아이디가 있음")
             db.transaction( (tx) => {
               tx.executeSql(
                 'SELECT pwd FROM user_info WHERE id=?',
@@ -68,10 +59,10 @@ export const authScreen = ({ navigation }) => {
                   var pwdValid=res.rows.item(0).pwd;
                   console.log("------ Selected Pwd : "+pwdValid);
                   if(pwdValid===pwd){ //최종 일치 분기
-                    console.log("Matched Pwd")
                     getUser_no();
                   }else{
                     console.log("pwd and inputpwd not matched")
+                    setPwdErrorModal(true);
                   }
                 }
               )
@@ -86,17 +77,31 @@ export const authScreen = ({ navigation }) => {
   const getUser_no = () => {
     db.transaction ( tx => {
       tx.executeSql(
-        'SELECT user_no FROM user_info WHERE id=?',
+        'SELECT * FROM user_info WHERE id=?',
         [id],
         (tx, res) => {
-          var user_no=res.rows.item(0).user_no;
-          console.log("user_no : "+user_no);
-          AsyncStorage.setItem('user_no', JSON.stringify(user_no), () => { // user_no 변수로 user_no값이 들어가 있는 user 저장
-            console.log('유저 id 저장 [ authScreen ] : '+ user_no);
+          var selected=res.rows
+          var user_no=selected.item(0).user_no;
+          AsyncStorage.setItem('user_no', JSON.stringify(user_no), () => { 
+            // user_no 변수로 user_no값이 들어가 있는 user 저장
             authContext.userLogined=user_no;
-            console.log("auth Default :"+authContext.userLogined)
-            
           });
+          var user_no=selected.item(0).user_no;
+          var id=selected.item(0).id;
+          var pwd=selected.item(0).pwd;
+          var name=selected.item(0).name;
+          var email=selected.item(0).email;
+          var job=selected.item(0).job;
+          var regi_date=selected.item(0).regi_date;
+          var image=selected.item(0).image;
+          authContext.id=id;
+          authContext.pwd=pwd;
+          authContext.name=name;
+          authContext.email=email;
+          authContext.job=job;
+          authContext.regi_date=regi_date;
+          authContext.image=image;
+          authContext.user_no=user_no;
           navigation.replace("MainScreen")
         }
       )
@@ -136,6 +141,7 @@ export const authScreen = ({ navigation }) => {
       </View>
       <IdPwdNotNullModal modalOn={loginNotNullModal} modalOff={loginNotNullModallOff} />
       <LoginErrorModal modalOn={loginErrorModal} modalOff={modalOff} />
+      <ErrorModal modalOn={pwdErrorModal} modalOff={() => setPwdErrorModal(false)} message="아이디 혹은 비밀번호가 일치하지 않습니다." />
     </View>
   );
 };

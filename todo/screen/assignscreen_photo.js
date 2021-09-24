@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useContext } from 'react';
 import {
   View,
   Image,
@@ -13,6 +13,7 @@ import Modal from "react-native-modal";
 import SQLite from 'react-native-sqlite-storage';
 import moment from 'moment';
 import AsyncStorage from '@react-native-community/async-storage';
+import { AuthContext } from '../context';
 
 export default assignscreen_photo = ({route, navigation}) => {
   const db = SQLite.openDatabase({
@@ -20,6 +21,7 @@ export default assignscreen_photo = ({route, navigation}) => {
     location: 'default',
     createFromLocation: 2,
   })
+  const authContext=useContext(AuthContext);
   const nameRef = useRef();
   const [pictureSelected, setPicture] = useState(false);
   const [profileImage, setProfileImage] = useState(null);
@@ -94,15 +96,31 @@ export default assignscreen_photo = ({route, navigation}) => {
   const select = () => { 
     db.transaction( (tx) => {
       tx.executeSql(
-        'SELECT user_no FROM user_info WHERE id=?',
+        'SELECT * FROM user_info WHERE id=?',
         [id],
-        (tx,result) => {
+        (tx,res) => {
           console.log("select success")
-          var user=result.rows.item(0).user_no;
+          var user=res.rows.item(0).user_no;
           console.log("user_no : " + user);
           AsyncStorage.setItem('user_no', JSON.stringify(user), () => { // user_no 변수로 user_no값이 들어가 있는 user 저장
             console.log('유저 id 저장');
           });
+          var selected=res.rows;
+          var id=selected.item(0).id;
+          var pwd=selected.item(0).pwd;
+          var name=selected.item(0).name;
+          var email=selected.item(0).email;
+          var job=selected.item(0).job;
+          var regi_date=selected.item(0).regi_date;
+          var image=selected.item(0).image;
+          authContext.id=id;
+          authContext.pwd=pwd;
+          authContext.name=name;
+          authContext.email=email;
+          authContext.job=job;
+          authContext.regi_date=regi_date;
+          authContext.image=image;
+          console.log("image")
           navigation.replace("MainScreen")
         }, error => {
           console.log("Select Failed"+error)

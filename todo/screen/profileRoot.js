@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { StyleSheet, TouchableOpacity, Button, Text } from 'react-native';
 import ProfileEdit from './profileEdit';
 import { Profile } from './profilescreen';
+import { ResetPwd } from './resetPwd';
 
 export const ProfileStackScreen= () => {
     const ProfileStack= createStackNavigator();
@@ -16,7 +17,7 @@ export const ProfileStackScreen= () => {
         headerRight: () => (
             <TouchableOpacity style={styles.btnView}>
                <Text style={styles.logoutBtn}>Logout</Text>
-             </TouchableOpacity>         ),
+             </TouchableOpacity>),
         headerStyle : { backgroundColor : '#E0FFFF' } }} />
         <ProfileStack.Screen name="ProfileEdit" component={ProfileEdit} 
         options={{  headerRight: () => (
@@ -25,6 +26,15 @@ export const ProfileStackScreen= () => {
              </TouchableOpacity>
             ),
             headerTitle: "프로필 수정", headerTitleStyle : { fontFamily:"BMJUA" } ,
+            headerShown:false,
+            headerStyle : { backgroundColor : '#E0FFFF' } }} />
+        <ProfileStack.Screen name="resetPwd" component={ResetPwd} 
+        options={{  headerRight: () => (
+             <TouchableOpacity style={styles.btnView}>
+               <Text style={styles.logoutBtn}>Logout</Text>
+             </TouchableOpacity>
+            ),
+            headerTitle: "비밀번호 수정", headerTitleStyle : { fontFamily:"BMJUA" } ,
             headerShown:false,
             headerStyle : { backgroundColor : '#E0FFFF' } }} />
       </ProfileStack.Navigator>

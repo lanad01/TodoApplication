@@ -1,13 +1,15 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect, Component } from 'react';
 import {
   View,
   Text,
   StyleSheet,
+  Button,
+  TextInput,
   TouchableOpacity,
 } from 'react-native';
 import Modal from 'react-native-modal';
 
-export class IdPwdNotNullModal extends Component {
+export class ErrorModal extends Component {
     constructor(props){
     super(props);
     }
@@ -19,11 +21,11 @@ export class IdPwdNotNullModal extends Component {
         avoidKeyboard={true}
         transparent={true}
         style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <TouchableOpacity >
+        <TouchableOpacity onPress={this.props.modalOff }>
           <View style={styles.outside}>
             <View style={styles.validModal}>
               <Text style={styles.validText}>
-              ID와 암호는 반드시 작성해주셔야합니다.              
+                {this.props.message}
               </Text>
               <TouchableOpacity style={styles.choicebox} onPress={this.props.modalOff }>
                 <Text textAlign="center" style={styles.photochoose}>
@@ -80,5 +82,7 @@ const styles=StyleSheet.create({
       validText:{
         fontFamily:'BMJUA',
         fontSize:18,
+        textAlign:'center',
+        width:190
       },  
 })

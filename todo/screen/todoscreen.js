@@ -1,45 +1,80 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  TextInput,
-  TouchableOpacity
-} from 'react-native';
+import { View, Text, StyleSheet, Image, TextInput, TouchableOpacity, KeyboardAvoidingView} from 'react-native';
 import GestureRecognizer, {  swipeDirections,} from 'react-native-swipe-gestures';
 import {format} from 'date-fns';
 import Modal from "react-native-modal";
 import { Picker } from '@react-native-picker/picker';
 import DatePicker from 'react-native-date-picker';
 import SQLite from 'react-native-sqlite-storage';
-
 import { AuthContext } from '../context';
 import TodoList_v2 from './todoList_v2'
 import { TodoContext } from '../todoContext';
 
 export const Todo = ( {navigation}) => {
   const db = SQLite.openDatabase({name: 'testDB5', location: 'default', createFromLocation: 2,})
-  
+  useEffect(() => {
+    createTaskTable();
+    return () => {
+    }
+  }, [])
   const authContext = React.useContext(AuthContext);
   const todoContext = React.useContext(TodoContext);
-  console.log("user_no arrived at todoScreen : "+authContext.userLogined);
 
+  const createTaskTable = () => {
+          db.transaction(tx => {
+            tx.executeSql(
+                'CREATE TABLE IF NOT EXISTS task_info ('
+                +'task_no INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,'
+                +'user_no INTEGER NOT NULL,'
+                +'task_name VARCHAR(50) NOT NULL,'
+                +'priority VARCHAR(30) default "Middle",'
+                +'exp VARCHAR(100),'
+                +'FOREIGN KEY(user_no) REFERENCES user_info(user_no) ON DELETE CASCADE)'
+                ,
+                [],
+                (tx , res) => {
+                    console.log("Tasktable created");
+                   
+                }, error => {
+                  console.log("Task table created fail "+error)
+                }
+            );
+        });
+  }  
   const [modal, setModal] = useState(false);
   const [open, setOpen] = useState(false); // 달력 모달 오픈
 
-  const [ taskName, setTaskName ] = React.useState();
+  const [ taskName, setTaskName ] = React.useState(null);
   const [ priority, setPriority ] = React.useState();
   const [ exp, setExp ] = React.useState(new Date());
-  var formatteddate=format(exp, "MMMM do EEE yyyy");
+  var week = new Array('일', '월', '화', '수', '목', '금', '토');
+  var year=exp.getFullYear();
+  var month = exp.getMonth()+1;
+  var day = exp.getDate();
+  var dayName = week[exp.getDay()];
+  var dateToKorean=year+'년 '+month+'월 '+day+'일 '+dayName+'요일 ';
 
+  const [ render, reRender ] = useState(false);
   const register = () => { // Task 추가 등록
-    todoContext.addTaskName(taskName);
-    console.log(todoContext.taskName) // init 출력
-    todoContext.addPriority(priority);
-    todoContext.addExp(formatteddate);
-    setModal(!modal);
+    if(taskName != null){ // name은 낫널
+      db.transaction(tx => {
+        tx.executeSql(
+            'INSERT INTO task_info (user_no, task_name, priority, exp) VALUES (?,?,?,?)',
+            [authContext.user_no,taskName, priority, dateToKorean ],
+            (tx , res) => {
+              console.log("Insert Success")
+              setModal(!modal);
+              reRender(true)
+            }, error => {
+              console.log("Insert Failed"+error);
+            }
+        );
+      });
+    }else if(taskName===null){
+      console.log("TaskName Null!!")
+    }
   }
+
   const addModal = () => { // Task추가 모달창 On
     setModal(!modal);
   }
@@ -81,17 +116,15 @@ export const Todo = ( {navigation}) => {
         <Text style={styles.headerText}> To Do List Application</Text>
         <View style={styles.addModalBtn}>
           <Text style={styles.welcomingTxt}>
-            {authContext.userName} 님 환영합니다!{' '}
+           [ {authContext.name} ] 님 환영합니다!{' '}
           </Text>
           
         </View>
       </View>
-      <TouchableOpacity
-            onPress={addModal}
-            style={{ marginLeft: 200, marginTop: 50 }}>
+      <TouchableOpacity  onPress={addModal} style={{ marginLeft: 250, marginTop: 50,}}>
             <Image source={require('../assets/add.png')} />
-          </TouchableOpacity>
-      <TodoList_v2 />
+      </TouchableOpacity>
+      <TodoList_v2 reRender={render} />
       <Modal isVisible={modal} avoidKeyboard={true} transparent={true} >
         <View style={styles.addModal}>
           <Text style={styles.modalheader}> New Task </Text>
@@ -116,11 +149,11 @@ export const Todo = ( {navigation}) => {
             </View>
           </View>
           <View style={styles.addTaskContent}>
-            <TextInput style={styles.expInput} value={formatteddate} editable={false}  />
+            <TextInput style={styles.expInput} value={dateToKorean} editable={false}  />
             <TouchableOpacity style={styles.opacity}  onPress={() => setOpen(true)}>
               <Text style={{ fontFamily: 'BMJUA',  fontSize: 17, color: '#191970', marginRight: 0}}> 날짜지정 </Text>
             </TouchableOpacity>
-            <DatePicker modal open={open} date={exp} 
+            <DatePicker modal open={open} date={exp} minimumDate={new Date()} mode={'date'} textColor={'#191970'}
                 onConfirm={(exp) => { setOpen(false)
                 setExp(exp)
                 }}
@@ -169,14 +202,14 @@ const styles = StyleSheet.create({
     position:'absolute',
   },
   addModal: {
-    flex: 1,
     alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: '#191970',
     borderWidth: 5,
     borderColor: 'white',
     borderRadius: 30,
     width: 300,
-    height:100,
+    height:400,
     marginLeft: 25,
   },
   modalheader: {
@@ -191,6 +224,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#191970',
     marginTop: 12,
     flexDirection: 'row',
+    marginLeft:10,
   },
   taskContentText: {
     color: 'white',
@@ -230,6 +264,7 @@ const styles = StyleSheet.create({
     fontFamily: 'BMJUA',
     fontSize: 14,
     color: '#191970',
+    paddingLeft:12,
   },
   textInput: {
     marginTop: 20,
