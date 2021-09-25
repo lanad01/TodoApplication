@@ -1,33 +1,20 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  TextInput,
-  TouchableOpacity,
-} from 'react-native';
-import GestureRecognizer, {
-  swipeDirections,
-} from 'react-native-swipe-gestures';
+import { View,  Text, StyleSheet, Image, TextInput, TouchableOpacity, } from 'react-native';
+import GestureRecognizer, { swipeDirections,} from 'react-native-swipe-gestures';
 import { AuthContext } from '../context';
 
 export const Profile = ({ navigation }) => {
   const authContext = React.useContext(AuthContext);
   console.log("image path : "+authContext.image)
-  console.log("date 정보 : "+authContext.regi_date);
   var strToDate = new Date(authContext.regi_date);
-   // console.log(strToDate);
   var week = new Array('일', '월', '화', '수', '목', '금', '토');
   var localTime = strToDate.toLocaleTimeString();
-  // console.log(localTime);
   var year = strToDate.getFullYear();
   var month = strToDate.getMonth()+1;
   var day = strToDate.getDate();
   var dayName = week[strToDate.getDay()];
   var dateToKorean=year+'년 '+month+'월 '+day+'일 '+dayName+'요일 '+localTime.substring(0,5);
-  console.log(dateToKorean);
-
+  
   const config = { velocityThreshold: 0.5, directionalOffsetThreshold: 80 };
   function onSwipe(gestureName, gestureState) {
     const { SWIPE_UP, SWIPE_DOWN, SWIPE_LEFT, SWIPE_RIGHT } = swipeDirections;
@@ -40,6 +27,7 @@ export const Profile = ({ navigation }) => {
         break;
       case SWIPE_DOWN:
         console.log(gestureName)
+
         break;
       case SWIPE_LEFT:
         navigation.navigate("To do")
@@ -62,7 +50,9 @@ export const Profile = ({ navigation }) => {
         <Text style={styles.headerText}>프 로 필</Text>
         <View style={styles.overlap}>
           <View style={styles.profileBox}>
-            <Image source={ authContext.image != null ? {uri: authContext.image }: require('../assets/profile3.jpg')}
+            <Image 
+            source={ authContext.image === null || authContext.image === undefined ?
+            require('../assets/profile3.jpg') : {uri: authContext.image }}
               style={styles.profileImage}/>
             <Text style={styles.nameText}> {authContext.name} </Text>
             <Text style={styles.emailText}> {authContext.email === null ? authContext.emailNull : authContext.email } </Text>

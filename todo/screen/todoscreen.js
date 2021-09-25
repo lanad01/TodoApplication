@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Image, TextInput, TouchableOpacity, KeyboardAvoidingView} from 'react-native';
 import GestureRecognizer, {  swipeDirections,} from 'react-native-swipe-gestures';
-import {format} from 'date-fns';
 import Modal from "react-native-modal";
 import { Picker } from '@react-native-picker/picker';
 import DatePicker from 'react-native-date-picker';
@@ -9,6 +8,7 @@ import SQLite from 'react-native-sqlite-storage';
 import { AuthContext } from '../context';
 import TodoList_v2 from './todoList_v2'
 import { TodoContext } from '../todoContext';
+import { Loading } from '../modal/Loading';
 
 export const Todo = ( {navigation}) => {
   const db = SQLite.openDatabase({name: 'testDB5', location: 'default', createFromLocation: 2,})
@@ -54,7 +54,9 @@ export const Todo = ( {navigation}) => {
   var dayName = week[exp.getDay()];
   var dateToKorean=year+'년 '+month+'월 '+day+'일 '+dayName+'요일 ';
 
-  const [ render, reRender ] = useState(false);
+  const [render, reRender]=useState(false);
+  const [loading, setLoading] = useState(false);
+
   const register = () => { // Task 추가 등록
     if(taskName != null){ // name은 낫널
       db.transaction(tx => {
@@ -64,7 +66,11 @@ export const Todo = ( {navigation}) => {
             (tx , res) => {
               console.log("Insert Success")
               setModal(!modal);
-              reRender(true)
+              reRender(!render);
+              setLoading(true);
+              setTimeout(function() {
+              setLoading(false)
+              }, 4000);
             }, error => {
               console.log("Insert Failed"+error);
             }
@@ -96,6 +102,8 @@ export const Todo = ( {navigation}) => {
         break;
       case SWIPE_DOWN:
         console.log(gestureName)
+        reRender(!render);
+        console.log(render);
         break;
       case SWIPE_LEFT:
         console.log("left")
@@ -121,10 +129,10 @@ export const Todo = ( {navigation}) => {
           
         </View>
       </View>
-      <TouchableOpacity  onPress={addModal} style={{ marginLeft: 250, marginTop: 50,}}>
+      <TouchableOpacity  onPress={addModal} style={{ marginLeft: 250, marginTop: 30,}}>
             <Image source={require('../assets/add.png')} />
       </TouchableOpacity>
-      <TodoList_v2 reRender={render} />
+      <TodoList_v2 render={render} />
       <Modal isVisible={modal} avoidKeyboard={true} transparent={true} >
         <View style={styles.addModal}>
           <Text style={styles.modalheader}> New Task </Text>
@@ -171,6 +179,7 @@ export const Todo = ( {navigation}) => {
           </View>
         </View>
       </Modal>
+      <Loading modalOn={loading}/>
     </View>
     </GestureRecognizer>
   );

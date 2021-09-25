@@ -1,23 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { FlatList, StyleSheet, Text,Button, View, Image, ScrollView, Alert, RefreshControl } from 'react-native';
+import { FlatList, StyleSheet, Text, View, Image ,RefreshControl , Alert, ActivityIndicator  } from 'react-native';
 import { TextInput, TouchableOpacity } from 'react-native-gesture-handler';
 import { TodoContext } from '../todoContext';
 import { AuthContext } from '../context';
 import SQLite from 'react-native-sqlite-storage';
+import { Loading } from '../modal/Loading';
 
 
 const TodoList_v2 = (props) => {
   const db = SQLite.openDatabase({name: 'testDB5', location: 'default', createFromLocation: 2,})
   const todoContext = React.useContext(TodoContext);
-  const authContext=React.useContext(AuthContext);
-  const [refreshing, setRefreshing] = React.useState(false);
+  const authContext = React.useContext(AuthContext);
+  const [render, reRender]=useState(1);
   useEffect(() => {
     getTask();
+    reRender(props.render);
+    reRender(render+1);
     setInterval(() => {
-        setRefreshing(!refreshing);
+        getTask();
+        reRender(render+1);
     }, 5000);
     return () => {
-       console.log("나가기")
     }
   }, [])
   const [showBox, setShowBox] = useState(true);
@@ -29,12 +32,9 @@ const TodoList_v2 = (props) => {
         [authContext.user_no],
         (tx , res) => {
         var len=res.rows.length;
-        console.log("Length : "+len)
         if(len===0){
-            console.log("lengh = 0")
             setNoTask(true);
         }else if(len>0){
-            console.log("Select")
             setNoTask(false);
             todoContext.task_name=[]
             todoContext.task_prior=[]
@@ -75,6 +75,10 @@ const TodoList_v2 = (props) => {
               todoContext.task_prior.splice(index,1)
               todoContext.task_exp.splice(index,1)
               todoContext.task_no.splice(index,1)
+              setLoading(true)
+              setTimeout(function() {
+                setLoading(false)
+              }, 2000);
             }, error => {
               console.log("Delete Failed"+error);
             }
@@ -126,30 +130,29 @@ const TodoList_v2 = (props) => {
         : 
         
         <FlatList data={todoContext.task_name, todoContext.task_prior, todoContext.task_exp, todoContext.task_no}
-        refreshControl={ <RefreshControl refreshing={refreshing}  />
-        }
+        extraData={(render, props.render)} 
         renderItem={({ index }) => (
         <View style={styles.container}>
            
         <View style={todoContext.task_prior[index]==="High" ? styles.HighPriority : styles.itemContainer}>  
-            <View>
+            <View > 
                 <View style={{flexDirection:'row' }}>
                     <Text style={styles.listtext} ellipsizeMode={'tail'} numberOfLines={1} >{todoContext.task_name[index]} { todoContext.task_no[index]}  </Text>
                     <Text style={styles.priorityText}>[ {todoContext.task_prior[index]} ]</Text>
                     <View>
-                    <TouchableOpacity onPress={() => deleteTask(todoContext.task_no, index)}>
-                    <Image source={require("../assets/bin.png")} style={{width:35, height:30, marginTop:5}}/>
+                    <TouchableOpacity onPress={() => deleteTask(todoContext.task_no[index], index)}>
+                    <Image source={require("../assets/bin3.png")} style={{width:35, height:30, marginTop:5, right:7}}/>
                     </TouchableOpacity>
                     </View>
                 </View>
                 <Text style={styles.exp}> Until -  {todoContext.task_exp[index]}</Text>
             </View>
         </View>
+        <Loading modalOn={false}/>
         </View>
         )}
       />
     }
-    <Button onPress={getTask} title="Butto"/>
       </View>
   );
 };
@@ -165,8 +168,14 @@ const styles=StyleSheet.create({
         marginTop:10,
         backgroundColor:'white',
         borderRadius:7,
-        width:280,
-        height:70
+        shadowColor: "pink",
+        shadowOffset: {
+            width: 0,
+            height: 12,
+        },
+        shadowOpacity: 0.43,
+        shadowRadius: 9.51,
+        elevation: 15,
 
     },
     listtext : {
@@ -210,7 +219,13 @@ const styles=StyleSheet.create({
         marginTop:10,
         backgroundColor:'#FFC0CB',
         borderRadius:7,
-        width:280,
-        height:70
+        shadowColor: "pink",
+        shadowOffset: {
+            width: 0,
+            height: 7,
+        },
+        shadowOpacity: 0.43,
+        shadowRadius: 9.51,
+        elevation: 15,
     },
 })

@@ -1,29 +1,31 @@
-import React, {useState, useEffect} from 'react';
-import {  SafetyAreaView,  StyleSheet,  Text,  View,  Image,  TextInput,  KeyboardAvoidingView,  Platform,
+import React, {useState, useEffect, useRef} from 'react';
+import { StyleSheet,  Text,  View,  Image,  TextInput,  KeyboardAvoidingView,  Platform,
     TouchableOpacity, Keyboard } from 'react-native';
 import ImagePicker from 'react-native-image-crop-picker';
 import Modal from "react-native-modal";
 import { AuthContext } from '../context';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { PwdChangeModal } from '../modal/PwdChangeModal';
 import SQLite from 'react-native-sqlite-storage';
+import { ErrorModal } from '../modal/ErrorModal';
 
 const ProfileEdit = ({navigation}) => {
+  const authContext = React.useContext(AuthContext);
   const db = SQLite.openDatabase({
     name: 'testDB5',
     location: 'default',
     createFromLocation: 2,
   })
-  const authContext = React.useContext(AuthContext);
   const [pictureSelected, setPicture] = useState(false);
-  const [profileImage, setProfileImage] = useState('exist');
+  const [profileImage, setProfileImage] = useState(authContext.image);
   const [newName, setNewName]=useState(null); // not null
   const [newEmail,setNewEmail]=useState(null);
   const [newJob,setNewJob]=useState(null);
 
+  const [errorModal, setErrorModal]=useState(false)
   const [modalShow, setModal] = useState(false);
   const [pwdChangeModal, setPwdChangeModal]=useState(false);
   useEffect(()=> {
+    // console.log("pictureselected? "+pictureSelected )
     Keyboard.addListener("keyboardDidHide", e => {// 키보드가 사라지면 화면을 직접 내려버린다.
       setRise(0)
     })
@@ -47,10 +49,9 @@ const ProfileEdit = ({navigation}) => {
       includeBase64: true,
     }).then(image => {
       setPicture(true);
-      console.log(pictureSelected);
       setProfileImage(image.path);
       setModal(!modalShow);
-    });
+    })
   }
   function callCamera() {
     ImagePicker.openCamera({
@@ -68,25 +69,46 @@ const ProfileEdit = ({navigation}) => {
       setModal(!modalShow);
     });
   }
-  function saveBtn() {
-    console.log("save")
-    db.transaction(tx => {
-      tx.executeSql(
-          'UPDATE user_info SET name=?,email=?,job=? WHERE user_no=?',
-          [newName,newEmail,newJob, authContext.user_no],
-          (tx , res) => {
-              console.log("update success")
-              authContext.name=newName;
-              authContext.email=newEmail;
-              authContext.job=newJob;
-              navigation.navigate("Profile1st")
-          }, error => {
-            console.log("Update Failed"+error);
-          }
-      );
-    });
+  const saveConfirm = () => {
+    if(newName===null){
+      console.log("Errormodal")
+      setErrorModal(true)
+    }else if(newName != null){
+      saveBtn();
+    }
   }
-
+  function saveBtn() {
+    console.log("********************************************")
+    console.log("ProfileImage :"+profileImage)
+    console.log("AuthImage :"+authContext.image)
+    console.log("********************************************")
+    if(profileImage===undefined){ // 건드리지 않았을 때
+      console.log("건드리지 않았을 때")
+      setProfileImage(authContext.image)
+    }
+    if(profileImage!=authContext.image){ //프로필 이미지를 수정했을 때 
+      console.log("프로필을 수정했을 때")
+      authContext.image=profileImage;
+    }
+    if(profileImage===authContext.image){
+      console.log("둘다 같을 때")
+    }
+      db.transaction(tx => {
+          tx.executeSql(
+            'UPDATE user_info SET name=?,email=?,job=?, image=? WHERE user_no=?',
+            [newName,newEmail,newJob,authContext.image, authContext.user_no],
+            (tx , res) => {
+                console.log("update success")
+                authContext.name=newName;
+                authContext.email=newEmail;
+                authContext.job=newJob;
+                navigation.navigate("Profile1st")
+            }, error => {
+              console.log("Update Failed"+error);
+            }
+        );
+        });
+      }
   function changePwd() {
     setPwdChangeModal(true);
   }
@@ -109,25 +131,28 @@ const ProfileEdit = ({navigation}) => {
           style={{width:60, height:60, marginTop:10, marginLeft:15}}/>
           </TouchableOpacity>
           </View>
+          <ErrorModal modalOn={errorModal} message="이름은 반드시 적어주셔야합니다." modalOff={ () => setErrorModal(false)}/>
           <Image source={ pictureSelected ? { uri: profileImage } : {uri: authContext.image } }
             style={styles.profile}/>
           <TouchableOpacity
             onPress={registerPhoto}
             style={{ marginTop: -35, marginLeft: 140, }}>
             <Image source={require('../assets/cameraEidt.png')} style={{}} />
+            {/* <Image source={ {uri : "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"}}/> */}
           </TouchableOpacity>
         </View>
         <View style={styles.bottomContainer}>
           <View style={styles.categories}>
             <Text style={styles.text}> 이름(필수)</Text>
-            <TextInput style={styles.input} placeholder={ authContext.name } 
+            <TextInput style={styles.input}  placeholder={authContext.name}
             onChangeText={name => setNewName(name)}/>
             <View style={styles.inputUnderLine} />
           </View>
           <View style={styles.categories}>
             <Text style={styles.text}> 이메일 주소</Text>
             <TextInput style={styles.input} keyboardType="email-address"
-              placeholder={authContext.email} onFocus={ () => setRise(100)}
+              placeholder={authContext.email != null ? authContext.email : "이메일은 공란입니다"} 
+              onFocus={ () => setRise(100)}
               onChangeText={email => setNewEmail(email)}
             />
             <View style={styles.inputUnderLine} />
@@ -141,7 +166,7 @@ const ProfileEdit = ({navigation}) => {
           </View>
           <View style={styles.categories}>
             <Text style={styles.text}> 직 장 </Text>
-            <TextInput style={styles.input} placeholder={authContext.job} 
+            <TextInput style={styles.input} placeholder={authContext.job !=null ? authContext.job : "직장란은 공란입니다." } 
             onFocus={ () => setRise(200)} onChangeText={job => setNewJob(job)}
             />
             <View style={styles.inputUnderLine} />
@@ -150,7 +175,7 @@ const ProfileEdit = ({navigation}) => {
             <TouchableOpacity onPress={changePwd} style={styles.pwdChange}>
               <Text style={styles.pwdChangeText}> [ 비밀번호 변경 ]</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={saveBtn} style={styles.editBox}>
+            <TouchableOpacity onPress={saveConfirm} style={styles.editBox}>
               <Text style={styles.editText}> 저장 </Text>
             </TouchableOpacity>
         </View>
