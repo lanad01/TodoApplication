@@ -6,40 +6,35 @@ import { AuthContext } from '../context';
 import SQLite from 'react-native-sqlite-storage';
 import { Loading } from '../modal/Loading';
 
-
 const TodoList_v2 = (props) => {
   const db = SQLite.openDatabase({name: 'testDB5', location: 'default', createFromLocation: 2,})
-  const todoContext = React.useContext(TodoContext);
-  const authContext = React.useContext(AuthContext);
-  const [render, reRender]=useState(1);
+  const [loading, setLoading]=useState(true);
   useEffect(() => {
-    getTask();
-    reRender(props.render);
-    reRender(render+1);
-    setInterval(() => {
-        getTask();
-        reRender(render+1);
-    }, 5000);
+    setTimeout(() => {
+      props.render2() // 이건 무조건해야겠네
+      setLoading(false)
+    }, 1000);
+    const interval = setInterval(() => {
+      props.render2()
+      
+    }, 3000);
+    
     return () => {
+      console.log("Unmounted from todoList")
+      clearInterval(interval)
     }
   }, [])
-  const [showBox, setShowBox] = useState(true);
-  const [noTask, setNoTask] = useState(false);
-  const getTask = () => {
-    db.transaction(tx => {
-    tx.executeSql(
+  db.transaction( tx => {
+     tx.executeSql(
         'SELECT * FROM task_info WHERE user_no=?',
         [authContext.user_no],
         (tx , res) => {
         var len=res.rows.length;
         if(len===0){
+          console.log("Array length 0")
             setNoTask(true);
         }else if(len>0){
             setNoTask(false);
-            todoContext.task_name=[]
-            todoContext.task_prior=[]
-            todoContext.task_exp=[]
-            todoContext.task_no=[]
             for(var i=0; i<len; i++){
                 var taskName=res.rows.item(i).task_name
                 var priority=res.rows.item(i).priority
@@ -61,10 +56,17 @@ const TodoList_v2 = (props) => {
         console.log("Insert Failed"+error);
         }
     );
-    }
-  );
+  });
+  const todoContext = React.useContext(TodoContext);
+  const authContext = React.useContext(AuthContext);
+  
+  const [showBox, setShowBox] = useState(true);
+  const [noTask, setNoTask] = useState(false);
+  const getTask = () => {
+    
   }
   const deleteTaskImple = (task_no, index) => {
+    setLoading(true)
     db.transaction(tx => {
         tx.executeSql(
             'DELETE FROM task_info WHERE task_no=?',
@@ -75,10 +77,7 @@ const TodoList_v2 = (props) => {
               todoContext.task_prior.splice(index,1)
               todoContext.task_exp.splice(index,1)
               todoContext.task_no.splice(index,1)
-              setLoading(true)
-              setTimeout(function() {
-                setLoading(false)
-              }, 2000);
+              setLoading(false);
             }, error => {
               console.log("Delete Failed"+error);
             }
@@ -86,51 +85,31 @@ const TodoList_v2 = (props) => {
       });
     getTask();
   }
-  const clear = () => {
-    db.transaction(tx => {
-        tx.executeSql(
-            'DELETE FROM task_info WHERE user_no=?',
-            [authContext.user_no],
-            (tx , res) => {
-              console.log("Deleter Task")
-              getTask();
-            }, error => {
-              console.log("Insert Failed"+error);
-            }
-        );
-      });
-  }
   const deleteTask = (task_no, index) => {
     return(
     Alert.alert(
       "정말로 삭제하시겠습니까?",
       "복구하실 수 없습니다!",
-      [
-          {
-              text:"Yes",
+      [   {   text:"Yes",
               onPress : () => {
                 deleteTaskImple(task_no, index);
                 setShowBox(!showBox);
               },
           },
-          {
-              text: "No",
-          },
+          { text: "No", },
       ]
-    )
-    );
+    ));
   }
   return (
     <View style={styles.container}>
+      <Loading modalOn={loading}/>
         { noTask ? 
         <View style={{width:300, alignSelf:'center', alignItems:'center'}} >
         <Text style={styles.noTasktext}> No Task Yet ... </Text>
         <Image source={ require('../assets/task.png')}  style={{width:300, height:300, marginTop:-30}} />
         </View>
         : 
-        
         <FlatList data={todoContext.task_name, todoContext.task_prior, todoContext.task_exp, todoContext.task_no}
-        extraData={(render, props.render)} 
         renderItem={({ index }) => (
         <View style={styles.container}>
            
@@ -148,7 +127,7 @@ const TodoList_v2 = (props) => {
                 <Text style={styles.exp}> Until -  {todoContext.task_exp[index]}</Text>
             </View>
         </View>
-        <Loading modalOn={false}/>
+        
         </View>
         )}
       />
@@ -158,7 +137,6 @@ const TodoList_v2 = (props) => {
 };
 
 export default TodoList_v2;
-
 const styles=StyleSheet.create({
     container : {
         flex:1,
@@ -228,4 +206,130 @@ const styles=StyleSheet.create({
         shadowRadius: 9.51,
         elevation: 15,
     },
+    addModal: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: '#191970',
+      borderWidth: 5,
+      borderColor: 'white',
+      borderRadius: 30,
+      width: 300,
+      height:400,
+      marginLeft: 25,
+    },
+    modalheader: {
+      fontFamily: 'BMJUA',
+      fontSize: 22,
+      color: 'white',
+      marginTop: 10,
+    },
+    
+  addTaskContent: {
+    flex: 1,
+    alignItems: 'center',
+    backgroundColor: '#191970',
+    marginTop: 12,
+    flexDirection: 'row',
+    marginLeft:10,
+  },
+  taskContentText: {
+    color: 'white',
+    fontFamily: 'BMJUA',
+    fontSize: 20,
+  },
+  taskInput: {
+    width: '55%',
+    height: 35,
+    backgroundColor: 'white',
+    borderRadius: 7,
+    marginLeft: 10,
+  },
+  picker: {
+    width: 160,
+    height: 50,
+    backgroundColor: 'white',
+    marginLeft: 5,
+  },
+  expButton: {
+    fontFamily: 'BMJUA',
+    fontSize: 17,
+    color: 'white',
+    borderWidth: 5,
+    borderColor: 'white',
+    borderRadius: 5,
+    width: 65,
+    height: 35,
+    marginRight: 15,
+  },
+  expInput: {
+    backgroundColor: 'white',
+    marginLeft: 3,
+    width: 170,
+    height: 40,
+    borderRadius: 5,
+    fontFamily: 'BMJUA',
+    fontSize: 14,
+    color: '#191970',
+    paddingLeft:12,
+  },
+  textInput: {
+    marginTop: 20,
+    marginBottom: 10,
+    paddingHorizontal: 10,
+    height: 60,
+    borderRadius: 10,
+    borderColor: 'white',
+    borderWidth: 3,
+    color: 'white',
+    fontSize: 19,
+  },
+  opacity: {
+    backgroundColor: 'white',
+    marginTop: 0,
+    borderStyle: 'dotted',
+    borderWidth: 4,
+    borderColor: 'white',
+    width: 70,
+    alignItems: 'center',
+    marginLeft: 10,
+  },
+  showText: {
+    marginTop: 10,
+    fontSize: 25,
+    color: 'white',
+  },
+  logoutBtn: {
+    margin: 10,
+  },
+  opacity2 : {
+    backgroundColor: 'white',
+    marginBottom:10,
+    borderStyle: 'dotted',
+    borderWidth: 4,
+    borderColor: 'white',
+    width: 70,
+    alignItems: 'center',
+    marginLeft: 10,
+    
+  },
+  regBtn:{
+    fontFamily: 'BMJUA',
+    fontSize: 17,
+    color: '#191970',
+    marginRight: 0
+  },  
+  btn: {
+    alignItems: 'center',
+    backgroundColor: 'white',
+    width: 100,
+    height: 40,
+    borderRadius: 5,
+    borderWidth: 5,
+    marginBottom: 10,
+  },
+  btnTxt: {
+    fontFamily: 'BMJUA',
+    fontSize: 20,
+    marginTop: 2,
+  },
 })

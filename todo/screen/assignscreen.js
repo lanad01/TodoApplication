@@ -2,10 +2,12 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, Button, SafeAreaView ,Image, StyleSheet, Text, 
   TouchableWithoutFeedback, TextInput, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
+import { Dimensions } from 'react-native';
+
+
 
 
 export default assignScreen = ( { navigation }) => {
-  
   const idRef = useRef(); // useRefsms Dom을 부른다
   const pwdRef = useRef();
   const [ rise, setRise ] = useState(false);

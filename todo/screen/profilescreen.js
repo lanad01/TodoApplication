@@ -5,7 +5,6 @@ import { AuthContext } from '../context';
 
 export const Profile = ({ navigation }) => {
   const authContext = React.useContext(AuthContext);
-  console.log("image path : "+authContext.image)
   var strToDate = new Date(authContext.regi_date);
   var week = new Array('일', '월', '화', '수', '목', '금', '토');
   var localTime = strToDate.toLocaleTimeString();
@@ -27,7 +26,6 @@ export const Profile = ({ navigation }) => {
         break;
       case SWIPE_DOWN:
         console.log(gestureName)
-
         break;
       case SWIPE_LEFT:
         navigation.navigate("To do")

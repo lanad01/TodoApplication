@@ -9,4 +9,5 @@ export const TodoContext = React.createContext({
     task_name: [],
     task_prior:[],
     task_exp:[],
+    render:1
 });

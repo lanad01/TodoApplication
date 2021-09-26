@@ -1,12 +1,5 @@
-import React, { useState, useEffect, useContext } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Button,
-  TextInput,
-  TouchableOpacity,
-} from 'react-native';
+import React, { useState,useEffect } from 'react';
+import { SafeAreaView, View,  Text,  StyleSheet, TextInput, TouchableOpacity, Keyboard, KeyboardAvoidingView} from 'react-native';
 import Modal from "react-native-modal";
 import { AuthContext } from '../context';
 import SQLite from 'react-native-sqlite-storage';
@@ -14,6 +7,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import { LoginErrorModal } from '../modal/loginErrorModal';
 import { IdPwdNotNullModal } from '../modal/IdPwdNotNullModal';
 import { ErrorModal } from '../modal/ErrorModal';
+import { Dimensions } from 'react-native';
 
 export const authScreen = ({ navigation }) => {  
   const db = SQLite.openDatabase({
@@ -21,16 +15,29 @@ export const authScreen = ({ navigation }) => {
     location: 'default',
     createFromLocation: 2,
   })
+  const chartHeight = Dimensions.get('window').height;
+  const chartWidth = Dimensions.get('window').width;
+  // console.log(chartHeight, chartWidth)
+  const [keyboardH, setKeyboadrH]=useState();
+  // console.log(keyboardH)
+  useEffect(() => {
+    keyboardDidShowListener = Keyboard.addListener('keyboardDidShow',_keyboardDidShow);
+    //키보드가 show 했을 때 
+    Keyboard.addListener('keyboardDidHide', _keyboardDidHide)
+    return () => {
+    }
+  }, [])
+
+  function _keyboardDidShow (e) {                //키보드 show 했을때 실행
+    Height= e.endCoordinates.height-150;
+    setKeyboadrH(Height);
+  }
+  function _keyboardDidHide () {              //키보드 hide 했을때 실행
+    setKeyboadrH(0)
+  }
   const authContext = React.useContext(AuthContext);
   const [loginErrorModal, setLoginErrorModal]=useState(false);
-  const modalOff = () => {
-    setLoginErrorModal(false);
-  }
   const [loginNotNullModal, setLoginNotNullModal] = useState(false);
-  const loginNotNullModallOff = () => {
-    setLoginNotNullModal(false);
-  }
-
   const [pwdErrorModal, setPwdErrorModal]=useState(false);
 
   const [id, setId] = React.useState(null);
@@ -111,7 +118,11 @@ export const authScreen = ({ navigation }) => {
     navigation.navigate('Assign');
   };
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={{
+      backgroundColor: '#191970', alignItems: 'center', width:chartWidth, height:chartHeight,
+      bottom:keyboardH,
+    }}
+    >
       <Text style={styles.headerText}> TO DO LIST</Text>
       <View style={styles.bodyContainer}>
         <TextInput
@@ -139,27 +150,25 @@ export const authScreen = ({ navigation }) => {
         <Text style={styles.showText}></Text>
         <Text style={styles.showText}></Text>
       </View>
-      <IdPwdNotNullModal modalOn={loginNotNullModal} modalOff={loginNotNullModallOff} />
-      <LoginErrorModal modalOn={loginErrorModal} modalOff={modalOff} />
+      <IdPwdNotNullModal modalOn={loginNotNullModal} modalOff={ () => setLoginErrorModal(false)} />
+      <LoginErrorModal modalOn={loginErrorModal} modalOff={() =>setLoginErrorModal(false)} />
       <ErrorModal modalOn={pwdErrorModal} modalOff={() => setPwdErrorModal(false)} message="아이디 혹은 비밀번호가 일치하지 않습니다." />
-    </View>
+    
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#191970',
-    paddingHorizontal: 30,
-    flex: 1,
-    alignItems: 'center',
+    
   },
   headerText: {
-    paddingTop: 30,
-    alignItems: 'center',
-    fontSize: 38,
-    color: 'white',
-    top: 50,
-    fontFamily: 'BMJUA',
+  paddingTop: 30,
+      alignItems: 'center',
+      fontSize: 38,
+      color: 'white',
+      top: 50,
+      fontFamily: 'BMJUA',
   },
   bodyContainer: {
     backgroundColor: '#191970',
@@ -213,7 +222,7 @@ const styles = StyleSheet.create({
     fontFamily: 'BMJUA',
     fontSize: 20,
     color: '#191970',
-    marginTop: 6,
+    marginTop: 6
   },
   choicebox:{
     alignItems:'center',

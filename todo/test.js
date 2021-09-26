@@ -57,6 +57,19 @@ const KeyboardAvoidingComponent = () => {
     })
   }
   
+  useEffect(() => { 
+    const meth = async() => {
+      try {
+        setLoading(true);
+        await httpInstance.post(
+        '[API 주소]', 매개변수 ).then((response) => {
+          console.log("td") 
+        }) 
+      }catch (e) {
+         console.log("Err") 
+      }setLoading(false);
+    }
+
   const deleteData = () => {
     db.transaction(tx => {
       tx.executeSql(
