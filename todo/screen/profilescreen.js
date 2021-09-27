@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View,  Text, StyleSheet, Image, TextInput, TouchableOpacity, } from 'react-native';
 import GestureRecognizer, { swipeDirections,} from 'react-native-swipe-gestures';
-import { AuthContext } from '../context';
+import { AuthContext } from '../authcontext';
 
 export const Profile = ({ navigation }) => {
   const authContext = React.useContext(AuthContext);

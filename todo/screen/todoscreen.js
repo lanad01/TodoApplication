@@ -5,64 +5,29 @@ import Modal from "react-native-modal";
 import { Picker } from '@react-native-picker/picker';
 import DatePicker from 'react-native-date-picker';
 import SQLite from 'react-native-sqlite-storage';
-import { AuthContext } from '../context';
+import { AuthContext } from '../authcontext';
 import TodoList_v2 from './todoList_v2'
 import { Loading } from '../modal/Loading';
+import { TodoContext } from '../todoContext';
 
 export const Todo = ( {navigation}) => {
   const authContext = React.useContext(AuthContext)
-  const [loading, setLoading] = useState(false);
-  const [render2, reRender2]=useState(1)
-  const renderControl = () => { //FlatList 리렌더용
-    reRender2(render2+1)
-  }
+  const todoContext = React.useContext(TodoContext)
+  const [render, reRender]=useState(1)
+  const [loading, setLoading] = useState(false)
   const db = SQLite.openDatabase({name: 'testDB5', location: 'default', createFromLocation: 2,})
-  useEffect( () => { // 이 화면이 처음 띄워질 때만 실행됨 - 다른 Stack.Screen 들렀다 왔다해도 실행되는 것이 아님.
-                     // 그렇기 때문에 interval을 통한 주기적인 flatList reRender를 수행해야함. 
-                     // 근데 interval을 냅두면 memory Leak이라면서 오류가 뜸. 
-                     // 따라서 unmount 시 clearInterVal을 수행해줘야함 반드시.
-    createTaskTable()
-    const interval = setInterval(() => {
-      console.log("useEffect on?")
-      reRender2(render2+1)
-    }, 3000);
-    return () => {  // This is important, you must clear your interval when component unmounts
-      console.log("Unmounted from todoScreen")
-      clearInterval(interval)
-      setLoading(false);
-    }
-  }, [])
-  const createTaskTable = () => {
-    db.transaction(tx => {
-      tx.executeSql(
-        'SELECT task_no FROM task_info',[],
-        (tx,res)=>{
-          var len=res.rows.length;
-          if(len>0){
-
-          }else if(len===0){
-            db.transaction(tx => {
-              tx.executeSql(
-                  'CREATE TABLE IF NOT EXISTS task_info ('
-                  +'task_no INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,'
-                  +'user_no INTEGER NOT NULL,'
-                  +'task_name VARCHAR(50) NOT NULL,'
-                  +'priority VARCHAR(30) default "Middle",'
-                  +'exp VARCHAR(100),'
-                  +'FOREIGN KEY(user_no) REFERENCES user_info(user_no) ON DELETE CASCADE)',
-                  [],
-                  (tx , res) => {
-                      console.log("Tasktable created");
-                  }, error => {
-                    console.log("Task table created fail "+error)
-                  }
-              );
-          });
-          }
-        }
-      )
-    })
-  }  
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      console.log("todoscreen unsubscribe")
+      setLoading(true);
+      setTimeout(() => {
+        setLoading(false)
+      }, 1000);
+    });
+    return unsubscribe;
+  }, [navigation]);
+    
+  
   const [modal, setModal] = useState(false); // 태스크 추가 모달
   const [open, setOpen] = useState(false); // 달력 모달 오픈
 
@@ -70,7 +35,7 @@ export const Todo = ( {navigation}) => {
   const [ priority, setPriority ] = React.useState();
   const [ exp, setExp ] = React.useState(new Date());
   var week = new Array('일', '월', '화', '수', '목', '금', '토');
-  var year=exp.getFullYear();
+  var year= exp.getFullYear();
   var month = exp.getMonth()+1;
   var day = exp.getDate();
   var dayName = week[exp.getDay()];
@@ -79,14 +44,13 @@ export const Todo = ( {navigation}) => {
     if(taskName != null){ // name은 낫널
       db.transaction(tx => {
         setLoading(true);
-
         tx.executeSql(
             'INSERT INTO task_info (user_no, task_name, priority, exp) VALUES (?,?,?,?)',
             [authContext.user_no,taskName, priority, dateToKorean ],
             (tx , res) => {
               console.log("Insert Success")
               setModal(!modal);
-              reRender2(render2+1) // FlatList 리렌더링용
+              reRender(render+1)
               setLoading(false);
             }, error => {
               console.log("Insert Failed"+error);
@@ -138,7 +102,7 @@ export const Todo = ( {navigation}) => {
       <TouchableOpacity  onPress={() => setModal(!modal)} style={{ marginLeft: 250, marginTop: 30,}}>
             <Image source={require('../assets/add.png')} />
       </TouchableOpacity>
-      <TodoList_v2 render2={renderControl}  />
+      <TodoList_v2 />
       <Modal isVisible={modal} avoidKeyboard={true} transparent={true} >
         <View style={styles.addModal}>
           <Text style={styles.modalheader}> New Task </Text>

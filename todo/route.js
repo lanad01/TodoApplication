@@ -1,17 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
-import { AuthContext } from "./context";
+import { AuthContext } from "./authcontext";
 import { TabsScreen } from "./screen/tabsScreen"
 import SQLite from 'react-native-sqlite-storage';
-import { AuthStackScreen } from "./screen/authroot";
 import { AssignStackScreen } from "./screen/assignroot";
 import moment from "moment";
-import { Button, StyleSheet } from "react-native";
 import AsyncStorage from "@react-native-community/async-storage";
 import { authScreen } from "./screen/authScreen";
 
-export default ({navigation}) => {
+export default () => {
   const db = SQLite.openDatabase({ name: 'testDB5', location: 'default', createFromLocation: 2, } );
   const createTable = () => {
     db.transaction(tx => {

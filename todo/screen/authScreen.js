@@ -1,7 +1,7 @@
 import React, { useState,useEffect } from 'react';
 import { SafeAreaView, View,  Text,  StyleSheet, TextInput, TouchableOpacity, Keyboard, KeyboardAvoidingView} from 'react-native';
 import Modal from "react-native-modal";
-import { AuthContext } from '../context';
+import { AuthContext } from '../authcontext';
 import SQLite from 'react-native-sqlite-storage';
 import AsyncStorage from '@react-native-community/async-storage';
 import { LoginErrorModal } from '../modal/loginErrorModal';
@@ -20,21 +20,23 @@ export const authScreen = ({ navigation }) => {
   // console.log(chartHeight, chartWidth)
   const [keyboardH, setKeyboadrH]=useState();
   // console.log(keyboardH)
-  useEffect(() => {
-    keyboardDidShowListener = Keyboard.addListener('keyboardDidShow',_keyboardDidShow);
-    //키보드가 show 했을 때 
-    Keyboard.addListener('keyboardDidHide', _keyboardDidHide)
-    return () => {
-    }
-  }, [])
 
   function _keyboardDidShow (e) {                //키보드 show 했을때 실행
-    Height= e.endCoordinates.height-150;
+    Height= e.endCoordinates.height-100;
     setKeyboadrH(Height);
   }
   function _keyboardDidHide () {              //키보드 hide 했을때 실행
     setKeyboadrH(0)
   }
+  useEffect(() => {
+    keyboardDidShowListener = Keyboard.addListener('keyboardDidShow',_keyboardDidShow);
+    //키보드가 show 했을 때 
+    keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', _keyboardDidHide);
+    return () => {
+      Keyboard.removeAllListeners('keyboardDidShow'); // 이거였구나.....
+      Keyboard.removeAllListeners('keyboardDidHide');
+    }
+  }, [keyboardH])
   const authContext = React.useContext(AuthContext);
   const [loginErrorModal, setLoginErrorModal]=useState(false);
   const [loginNotNullModal, setLoginNotNullModal] = useState(false);

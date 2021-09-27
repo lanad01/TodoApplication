@@ -2,7 +2,7 @@ import React, {useState, useEffect, useContext} from 'react';
 import {    StyleSheet,  Text,  View,  Image,  TextInput, 
     TouchableOpacity } from 'react-native';
 import Modal from "react-native-modal";
-import { AuthContext } from '../context';
+import { AuthContext } from '../authcontext';
 import SQLite from 'react-native-sqlite-storage';
 import { ErrorModal } from '../modal/ErrorModal';
 
@@ -12,12 +12,6 @@ export const ResetPwd = ({navigation}) => {
         location: 'default',
         createFromLocation: 2,
     })
-    useEffect(() => {
-        
-        return () => {
-            
-        }
-    }, [])
     const authContext=useContext(AuthContext);
     const [pwdVisible, setPwdVisible]=useState(true);
     const [newPwd, setNewPwd]=useState();

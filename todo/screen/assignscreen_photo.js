@@ -13,7 +13,7 @@ import Modal from "react-native-modal";
 import SQLite from 'react-native-sqlite-storage';
 import moment from 'moment';
 import AsyncStorage from '@react-native-community/async-storage';
-import { AuthContext } from '../context';
+import { AuthContext } from '../authcontext';
 
 export default assignscreen_photo = ({route, navigation}) => {
   const db = SQLite.openDatabase({

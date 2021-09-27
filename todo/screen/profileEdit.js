@@ -3,7 +3,7 @@ import { StyleSheet,  Text,  View,  Image,  TextInput,  KeyboardAvoidingView,  P
     TouchableOpacity, Keyboard } from 'react-native';
 import ImagePicker from 'react-native-image-crop-picker';
 import Modal from "react-native-modal";
-import { AuthContext } from '../context';
+import { AuthContext } from '../authcontext';
 import { PwdChangeModal } from '../modal/PwdChangeModal';
 import SQLite from 'react-native-sqlite-storage';
 import { ErrorModal } from '../modal/ErrorModal';

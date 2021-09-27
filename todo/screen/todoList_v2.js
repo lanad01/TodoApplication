@@ -1,72 +1,51 @@
 import React, { useState, useEffect } from 'react';
 import { FlatList, StyleSheet, Text, View, Image ,RefreshControl , Alert, ActivityIndicator  } from 'react-native';
-import { TextInput, TouchableOpacity } from 'react-native-gesture-handler';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 import { TodoContext } from '../todoContext';
-import { AuthContext } from '../context';
+import { AuthContext } from '../authcontext';
 import SQLite from 'react-native-sqlite-storage';
-import { Loading } from '../modal/Loading';
 
 const TodoList_v2 = (props) => {
   const db = SQLite.openDatabase({name: 'testDB5', location: 'default', createFromLocation: 2,})
-  const [loading, setLoading]=useState(true);
-  useEffect(() => {
-    setTimeout(() => {
-      props.render2() // 이건 무조건해야겠네
-      setLoading(false)
-    }, 1000);
-    const interval = setInterval(() => {
-      props.render2()
-      
-    }, 3000);
-    
-    return () => {
-      console.log("Unmounted from todoList")
-      clearInterval(interval)
-    }
-  }, [])
+
+  const [showBox, setShowBox] = useState(true);
+  const [noTask, setNoTask] = useState(0); 
+  //이걸 false true로 할 시, 첫 등록에는 false로 바뀌면서 rendering이 실행되지 않는다.
+  //  따라서 1씩 추가되는 형식으로 진행해보자
+
   db.transaction( tx => {
-     tx.executeSql(
-        'SELECT * FROM task_info WHERE user_no=?',
-        [authContext.user_no],
-        (tx , res) => {
-        var len=res.rows.length;
-        if(len===0){
-          console.log("Array length 0")
-            setNoTask(true);
-        }else if(len>0){
-            setNoTask(false);
-            for(var i=0; i<len; i++){
-                var taskName=res.rows.item(i).task_name
-                var priority=res.rows.item(i).priority
-                if(priority===null) {priority="Middle"}
-                var exp=res.rows.item(i).exp
-                var task_no=res.rows.item(i).task_no
-                todoContext.task_no[i]=task_no
-                todoContext.task_name[i]=taskName
-                todoContext.task_prior[i]=priority
-                todoContext.task_exp[i]=exp
-                // console.log("taskName[i] :" +todoContext.task_name[i])
-                // console.log("taskName[i] :" +todoContext.task_prior[i])
-                // console.log("taskName[i] :" +todoContext.task_exp[i])
-                // console.log("taskName[i] :" +todoContext.task_no[i])
-                // console.log("---------------------------------------")
-            }
-        }
-        }, error => {
-        console.log("Insert Failed"+error);
-        }
-    );
-  });
+    tx.executeSql(
+      'SELECT * FROM task_info WHERE user_no=?',
+      [authContext.user_no],
+      (tx , res) => {
+      var len=res.rows.length;
+      if(len===0){
+        // console.log("Array length 0")
+          setNoTask(0);
+      }else if(len>0){
+          setNoTask(noTask+1);
+          for(var i=0; i<len; i++){
+              var taskName=res.rows.item(i).task_name
+              var priority=res.rows.item(i).priority
+              if(priority===null) {priority="Middle"}
+              var exp=res.rows.item(i).exp
+              var task_no=res.rows.item(i).task_no
+              todoContext.task_no[i]=task_no
+              todoContext.task_name[i]=taskName
+              todoContext.task_prior[i]=priority
+              todoContext.task_exp[i]=exp
+          }
+      }
+      }, error => {
+      console.log("Failed"+error);
+      }
+  );
+  }
+  );
   const todoContext = React.useContext(TodoContext);
   const authContext = React.useContext(AuthContext);
   
-  const [showBox, setShowBox] = useState(true);
-  const [noTask, setNoTask] = useState(false);
-  const getTask = () => {
-    
-  }
   const deleteTaskImple = (task_no, index) => {
-    setLoading(true)
     db.transaction(tx => {
         tx.executeSql(
             'DELETE FROM task_info WHERE task_no=?',
@@ -77,13 +56,11 @@ const TodoList_v2 = (props) => {
               todoContext.task_prior.splice(index,1)
               todoContext.task_exp.splice(index,1)
               todoContext.task_no.splice(index,1)
-              setLoading(false);
             }, error => {
               console.log("Delete Failed"+error);
             }
         );
       });
-    getTask();
   }
   const deleteTask = (task_no, index) => {
     return(
@@ -102,8 +79,7 @@ const TodoList_v2 = (props) => {
   }
   return (
     <View style={styles.container}>
-      <Loading modalOn={loading}/>
-        { noTask ? 
+        { noTask ===0 ? 
         <View style={{width:300, alignSelf:'center', alignItems:'center'}} >
         <Text style={styles.noTasktext}> No Task Yet ... </Text>
         <Image source={ require('../assets/task.png')}  style={{width:300, height:300, marginTop:-30}} />
@@ -111,8 +87,9 @@ const TodoList_v2 = (props) => {
         : 
         <FlatList data={todoContext.task_name, todoContext.task_prior, todoContext.task_exp, todoContext.task_no}
         renderItem={({ index }) => (
+        <TouchableOpacity onPress={console.log('Flat touch')} >
         <View style={styles.container}>
-           
+        
         <View style={todoContext.task_prior[index]==="High" ? styles.HighPriority : styles.itemContainer}>  
             <View > 
                 <View style={{flexDirection:'row' }}>
@@ -129,6 +106,7 @@ const TodoList_v2 = (props) => {
         </View>
         
         </View>
+        </TouchableOpacity>
         )}
       />
     }
