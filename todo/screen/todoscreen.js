@@ -16,6 +16,7 @@ export const Todo = ( {navigation}) => {
   const [render, reRender]=useState(1)
   const [loading, setLoading] = useState(false)
   const db = SQLite.openDatabase({name: 'testDB5', location: 'default', createFromLocation: 2,})
+  
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       console.log("todoscreen unsubscribe")
@@ -25,9 +26,7 @@ export const Todo = ( {navigation}) => {
       }, 1000);
     });
     return unsubscribe;
-  }, [navigation]);
-    
-  
+  }, [render]);
   const [modal, setModal] = useState(false); // 태스크 추가 모달
   const [open, setOpen] = useState(false); // 달력 모달 오픈
 
@@ -43,14 +42,14 @@ export const Todo = ( {navigation}) => {
   const register = () => { // Task 추가 등록
     if(taskName != null){ // name은 낫널
       db.transaction(tx => {
-        setLoading(true);
         tx.executeSql(
-            'INSERT INTO task_info (user_no, task_name, priority, exp) VALUES (?,?,?,?)',
+            'INSERT INTO task_info2 (user_no, task_name, priority, exp, performed) VALUES (?,?,?,?,false)',
             [authContext.user_no,taskName, priority, dateToKorean ],
             (tx , res) => {
               console.log("Insert Success")
               setModal(!modal);
-              reRender(render+1)
+              setLoading(true)
+              reLoading()
               setLoading(false);
             }, error => {
               console.log("Insert Failed"+error);
@@ -80,6 +79,13 @@ export const Todo = ( {navigation}) => {
         break;
     }
   }
+  console.log('todoscreen render');
+  const reLoading = () => {
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false)
+    }, 1000);
+  }
   return (
     <GestureRecognizer
       style={{ height:"100%"}}
@@ -102,7 +108,8 @@ export const Todo = ( {navigation}) => {
       <TouchableOpacity  onPress={() => setModal(!modal)} style={{ marginLeft: 250, marginTop: 30,}}>
             <Image source={require('../assets/add.png')} />
       </TouchableOpacity>
-      <TodoList_v2 />
+      
+      <TodoList_v2 render={loading} render2={reLoading} />
       <Modal isVisible={modal} avoidKeyboard={true} transparent={true} >
         <View style={styles.addModal}>
           <Text style={styles.modalheader}> New Task </Text>

@@ -14,61 +14,54 @@ export const TabsScreen =  props  => {
   const todoContext =React.useContext(TodoContext)
   const Tabs = createBottomTabNavigator();
   const [ getLengthForBadge, setLength ] = useState(0)
-  console.log("tabsScreen mounted")
   db.transaction(tx => { //검색되는 튜플 자체가 없다면 테이블 생성
     tx.executeSql(
-      'SELECT task_no FROM task_info',[],
+      'SELECT task_no FROM task_info2',[],
       (tx,res)=>{
         var len=res.rows.length;
         if(len>0){}
         else if(len===0){
           db.transaction(tx => {
             tx.executeSql(
-                'CREATE TABLE IF NOT EXISTS task_info ('
+                'CREATE TABLE IF NOT EXISTS task_info2 ('
                 +'task_no INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,'
                 +'user_no INTEGER NOT NULL,'
                 +'task_name VARCHAR(50) NOT NULL,'
-                +'priority VARCHAR(30) default "Middle",'
+                +'priority VARCHAR(30) DEFAULT "Middle",'
                 +'exp VARCHAR(100),'
+                +'performed boolean,'
                 +'FOREIGN KEY(user_no) REFERENCES user_info(user_no) ON DELETE CASCADE)',
+                
                 [],
                 (tx , res) => {
                     console.log("Tasktable created");
                 }, error => {
                   console.log("Task table created fail "+error)
                 }
-            );
-        });
+            )
+        })
         }
-      }
+    }
     )
   })
   useEffect(() => {
-    // setTimeout(() => { //비동기 처리는 이렇게 하는거밖에 방법이 없는거야?
-    //   db.transaction(tx => { //badge 형성을 위해 해당 user_no의 남아있는 todoList length 출력
-    //     tx.executeSql(
-    //       'SELECT task_no FROM task_info WHERE user_no=?',
-    //       [authContext.user_no],
-    //       (tx,res)=>{
-    //         var len=res.rows.length;
-    //         setLength(len) //이걸 렌더링 해버리면 뒤쪽이 애매해지네
-    //       });  
-    //   })
-    // }, 1000);
-    db.transaction(async tx => { //badge 형성을 위해 해당 user_no의 남아있는 todoList length 출력
-      //비동기처리 async로 최신화를 용이하게.
-      await tx.executeSql(
-        'SELECT task_no FROM task_info WHERE user_no=?',
-        [authContext.user_no],
-        (tx,res)=>{
-          var len=res.rows.length;
-          setLength(len) //이걸 렌더링 해버리면 뒤쪽이 애매해지네
-        });  
-    })
+    setInterval(() => { //비동기 처리는 이렇게 하는거밖에 방법이 없는거야?
+      db.transaction(tx => { //badge 형성을 위해 해당 user_no의 남아있는 todoList length 출력
+        tx.executeSql(
+          'SELECT task_no FROM task_info2 WHERE user_no=?',
+          [authContext.user_no],
+          (tx,res)=>{
+            var len=res.rows.length;
+            setLength(len) //이걸 렌더링 해버리면 뒤쪽이 애매해지네
+          });  
+      })
+    }, 5000);
     return () => {
-      
-    }
-  }, [getLengthForBadge])
+      console.log("unmounted from tabsScreen")
+          }
+  }, [])
+  
+    
   
   function outFromTab () {
     Alert.alert(
@@ -129,7 +122,7 @@ export const TabsScreen =  props  => {
       </Tabs.Navigator>
     </TodoContext.Provider>
   );
-};
+}
 const styles=StyleSheet.create({
   headerBtn:{
     width:100,

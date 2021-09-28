@@ -131,7 +131,7 @@ const ProfileEdit = ({navigation}) => {
           style={{width:60, height:60, marginTop:10, marginLeft:15}}/>
           </TouchableOpacity>
           </View>
-          <ErrorModal modalOn={errorModal} message="이름은 반드시 적어주셔야합니다." modalOff={ () => setErrorModal(false)}/>
+          <ErrorModal modalOn={errorModal} message="이름은 반드시 적어주셔야   합니다." modalOff={ () => setErrorModal(false)}/>
           <Image source={ pictureSelected ? { uri: profileImage } : {uri: authContext.image } }
             style={styles.profile}/>
           <TouchableOpacity

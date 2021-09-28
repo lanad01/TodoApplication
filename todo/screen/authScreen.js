@@ -22,7 +22,7 @@ export const authScreen = ({ navigation }) => {
   // console.log(keyboardH)
 
   function _keyboardDidShow (e) {                //키보드 show 했을때 실행
-    Height= e.endCoordinates.height-100;
+    Height= e.endCoordinates.height-160;
     setKeyboadrH(Height);
   }
   function _keyboardDidHide () {              //키보드 hide 했을때 실행
