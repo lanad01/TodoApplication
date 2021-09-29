@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { FlatList, StyleSheet, Text, View, Image , Alert, 
+import { SafeAreaView, FlatList, StyleSheet, Text, View, Image , Alert, Dimensions, Button, Easing,
   TouchableOpacity, } from 'react-native';
 import { TodoContext } from '../todoContext';
 import { AuthContext } from '../authcontext';
 import SQLite from 'react-native-sqlite-storage';
 import { TaskDetailModal } from '../modal/TaskDetailModal';
-import {TouchableWithoutFeedback } from 'react-native-gesture-handler';
+import {TouchableWithoutFeedback, } from 'react-native-gesture-handler';
+import Animated, {
+} from 'react-native-reanimated';
+import { SwipeListView } from 'react-native-swipe-list-view';
 
-const db = SQLite.openDatabase({name: 'testDB5', location: 'default', createFromLocation: 2,})
-
-
+const rowTranslateAnimatedValues = []
+const db = SQLite.openDatabase({name: 'testDB5', location: 'default', createFromLocation: 2,}) 
 const TodoList_v2 = (props) => {
   const todoContext = React.useContext(TodoContext);
   const authContext = React.useContext(AuthContext);
@@ -20,6 +22,7 @@ const TodoList_v2 = (props) => {
     modal : false,
     task_no : 0
   });
+  const [animated,setAnimated]=useState(new Animated.Value(0));
   useEffect(() => {
     console.log("getTaskDEtail")
     setNoTask(noTask+1)
@@ -34,13 +37,17 @@ const TodoList_v2 = (props) => {
                setNoTask(0);
            }else if(len>0){
                for(var i=0; i<len; i++){
-                   var priority=res.rows.item(i).priority
-                   if(priority===null) {priority="Middle"}
-                   todoContext.task_no[i]=res.rows.item(i).task_no
-                   todoContext.task_name[i]=res.rows.item(i).task_name
-                   todoContext.task_prior[i]=priority
-                   todoContext.task_exp[i]=res.rows.item(i).exp
-                   todoContext.performed[i]=res.rows.item(i).performed
+                  var priority=res.rows.item(i).priority
+                  if(priority===null) {priority="Middle"}
+                  todoContext.task_no[i]=res.rows.item(i).task_no
+                  todoContext.task_name[i]=res.rows.item(i).task_name
+                  todoContext.task_prior[i]=priority
+                  todoContext.task_exp[i]=res.rows.item(i).exp
+                  todoContext.performed[i]=res.rows.item(i).performed
+                  
+                  rowTranslateAnimatedValues[i] = new Animated.Value();
+                  rowTranslateAnimatedValues[i].Value=1
+                  console.log("row Value at SElect: "+rowTranslateAnimatedValues[i].Value)
                }
            }
            }, error => {
@@ -64,6 +71,7 @@ const TodoList_v2 = (props) => {
               todoContext.task_exp.splice(index,1)
               todoContext.task_no.splice(index,1)
               todoContext.performed.splice(index,1)
+
             }, error => {
               console.log("Delete Failed"+error);
             }
@@ -105,66 +113,112 @@ const TodoList_v2 = (props) => {
       );
     });
   }
+  const renderHiddenItem = () => (
+    <View style={styles.hidden} >
+      <Text style={styles.hiddenText}> Tisk</Text>
+    </View>  
+  );
+  const Ani = (index) => {
+    setAnimated(0)
+    console.log("Animated?:"+animated)
+    console.log("rowTranslate2 :"+rowTranslateAnimatedValues[index].Value)
+    Animated.timing(animated, {
+      toValue:0,
+      duration:5500,
+      Easing
+
+    }).start();
+  }
   console.log('todolistv2')
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
         { noTask ===0 ? 
         <View style={{width:300, alignSelf:'center', alignItems:'center'}} scrollEnabled={false} >
         <Text style={styles.noTasktext}> No Task Yet ... </Text>
         <Image source={ require('../assets/task.png')}  style={{width:300, height:300, marginTop:-30}} />
         </View>
         : 
-        <FlatList
+        <SwipeListView
+        disableRightSwipe
+        useNativeDriver={false}
+        rightOpenValue={-Dimensions.get('window').width}
+        renderHiddenItem={renderHiddenItem}
         data={todoContext.task_name, todoContext.task_prior, todoContext.task_exp, todoContext.task_no, todoContext.performed }
-        renderItem={({ item, index }) => (
-           
-        <View 
-        style={todoContext.task_prior[index]==="High" ? styles.HighPriority : styles.itemContainer}>  
-        <TouchableOpacity
-          style={todoContext.performed[index]==1 ? {backgroundColor:'#dcdcdc', opacity:0.9, borderRadius:6} : {}   }
-          key={index.toString()} 
-          onPress={() => details(todoContext.task_no[index]) }
-        >
-          <View > 
-                <View style={{flexDirection:'row' }}>
-                    <Text style={styles.listtext} ellipsizeMode={'tail'} numberOfLines={1} >{todoContext.task_name[index]} { todoContext.task_no[index]}  </Text>
-                    <Text style={styles.priorityText}>[ {todoContext.task_prior[index]} ]</Text>
+        renderItem={({ index }) => (  
+          <SafeAreaView>
+          <Animated.View style={[  // 처음은 정적 스타일, 두번째는 시간이 지남에 따라 변경할 스타일
+            {
+              opacity:0.1
+            },
+            {
+              opacity:animated
+            },
+          ]} 
+          >
+            <Button onPress={() => Ani(index)} title="Buttom"/>
+            <TouchableOpacity onPress={() => details(todoContext.task_no[index]) }
+              style={todoContext.performed[index]==1 ? {backgroundColor:'#dcdcdc', opacity:0.9, borderRadius:6} : {}   }
+              key={index.toString()}>
+              <View style={todoContext.task_prior[index]==="High" ? styles.HighPriority : styles.itemContainer}> 
+                  <View style={{flexDirection:'row' }}>
+                      <Text style={styles.listtext} ellipsizeMode={'tail'} numberOfLines={1} >{todoContext.task_name[index]} { todoContext.task_no[index]}  </Text>
+                      <Text style={styles.priorityText}>[ {todoContext.task_prior[index]} ]</Text>
+                      <View>
+                      <TouchableOpacity onPress={() => deleteTask(todoContext.task_no[index], index)}>
+                      <Image source={require("../assets/bin3.png")} style={{width:35, height:30, marginTop:5, right:7, marginLeft:5}}/>
+                      </TouchableOpacity>
+                      </View>
+                  </View>
+                  <View style={{flexDirection:'row'}}>
+                    <Text style={styles.exp}> 기한 -  {todoContext.task_exp[index]}</Text>
                     <View>
-                    <TouchableOpacity onPress={() => deleteTask(todoContext.task_no[index], index)}>
-                    <Image source={require("../assets/bin3.png")} style={{width:35, height:30, marginTop:5, right:7, marginLeft:5}}/>
-                    </TouchableOpacity>
-                    </View>
-                </View>
-                <View style={{flexDirection:'row'}}>
-                  <Text style={styles.exp}> 기한 -  {todoContext.task_exp[index]}</Text>
-                  <View>
-                   {todoContext.performed[index] == 0 ?  
-                    <TouchableOpacity style={styles.notComplete} onPress={() => complete(todoContext.task_no[index],index)}>
-                      <Text style={styles.perforemd}> 완 료</Text>  
-                    </TouchableOpacity>
-                   : 
-                   <TouchableWithoutFeedback style={styles.complete}>
-                      <Text style={styles.perforemd}> 완료됨</Text>  
-                    </TouchableWithoutFeedback>
-                   }
-                  </View>    
-                </View>
-          </View>
-        </TouchableOpacity>
-        </View>
+                    {todoContext.performed[index] == 0 ?  
+                      <TouchableOpacity style={styles.notComplete} onPress={() => complete(todoContext.task_no[index],index)}>
+                        <Text style={styles.perforemd}> 완 료</Text>  
+                      </TouchableOpacity>
+                    : 
+                    <TouchableWithoutFeedback style={styles.complete}>
+                        <Text style={styles.perforemd}> 완료됨</Text>  
+                      </TouchableWithoutFeedback>
+                    }
+                    </View>    
+                  </View>
+              </View>
+            </TouchableOpacity>
+          </Animated.View>
+          </SafeAreaView>
         )}
       />
     }
     <TaskDetailModal modalOn={taskDetailModal.modal} modalOff={ () => setTaskDetailModal(false, 1)}
                     task_no={taskDetailModal.task_no} />
-  </View>
+  </SafeAreaView>
   );
 };
 
 export default TodoList_v2;
 const styles=StyleSheet.create({
+  hidden:{
+    justifyContent: 'center',
+    color:'white',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    flex:1,
+  },
+  hiddenText:{
+    alignItems: 'center',
+    bottom: 0,
+    justifyContent: 'center',
+    position: 'absolute',
+    top: 0,
+    width: 75,
+    color:'white',
+  },
     container : {
         flex:1,
+    },
+    task:{
+      justifyContent: 'center',
     },
     itemContainer : {
         flex:1,
@@ -206,10 +260,8 @@ const styles=StyleSheet.create({
         marginLeft:3,
         marginTop:10
     },
-    
     itemTaskContainer:{
         flexDirection:'row',
-
     },
     HighPriority:{
         flex:1,
@@ -389,4 +441,5 @@ const styles=StyleSheet.create({
     borderRadius:5,
     opacity:0.7,
   },
+  
 })

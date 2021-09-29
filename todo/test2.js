@@ -1,21 +1,58 @@
-import React, { Component } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import SwipeableRow from './test';
-// create a component
-class App extends Component {
-  render() {
+import React from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Dimensions,
+  Animated,
+  TouchableOpacity,
+} from 'react-native';
+import Swipeable from 'react-native-gesture-handler/Swipeable';
+
+const SCREEN_WIDTH = Dimensions.get('window').width;
+
+const ItemBox = () => {
+  const leftSwipe = (progress, dragX) => {
+    console.log("ddd")
+    const scale = dragX.interpolate({
+      inputRange: [0, 100],
+      outputRange: [0, 1],
+      extrapolate: 'clamp',
+    });
     return (
-      <View style={styles.container}>
-        <SwipeableRow></SwipeableRow>
-      </View>
+      <TouchableOpacity activeOpacity={0.6}>
+        <View style={styles.deleteBox}>
+          <Animated.Text style={{transform: [{scale: scale}]}}>
+            Delete
+          </Animated.Text>
+        </View>
+      </TouchableOpacity>
     );
-  }
-}
-// define your styles
+  };
+  return (
+    <Swipeable renderLeftActions={leftSwipe}>
+      <View style={styles.container}>
+        <Text>My name is</Text>
+      </View>
+    </Swipeable>
+  );
+};
+
+export default ItemBox;
+
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    height: 80,
+    width: SCREEN_WIDTH,
+    backgroundColor: 'white',
+    justifyContent: 'center',
+    padding: 16,
+  },
+  deleteBox: {
+    backgroundColor: 'red',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 100,
+    height: 80,
   },
 });
-//make this component available to the app
-export default App;

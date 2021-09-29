@@ -10,12 +10,12 @@ export const TaskDetailModal = (props) => {
    
   console.log('TaskDetail render')
   const todoContext=useContext(TodoContext);
-  const [taskName, setTaskName]=useState();
-  const [taskPrior,setPrior]=useState();
+  const [taskName, setTaskName]=useState('');
+  const [taskPrior,setPrior]=useState('');
   const [exp, setExp]=useState(new Date())
-  const [formattedDate, setFormattedDate]=useState();
-  const [open, setOpen] = useState(); // 달력 모달 오픈
-  
+  const [formattedDate, setFormattedDate]=useState('');
+  const [open, setOpen] = useState(true); // 달력 모달 오픈
+  const [chageDate,setChangeDate]=useState(0)
   useEffect(() => {
     const db = SQLite.openDatabase({name: 'testDB5', location: 'default', createFromLocation: 2,})
     console.log("useEffect on?")
@@ -38,10 +38,14 @@ export const TaskDetailModal = (props) => {
       });
     return () => { }
   }, [props.modalOn]) 
-  
+  useEffect(() => {
+    console.log("Exp in useEffect"+exp)
+    confirm(exp);
+    return () => {
+      
+    }
+  }, [exp,chageDate])
   const confirm = (exp) => {
-    console.log("confrim")
-    setExp(exp)
     var week = new Array('일', '월', '화', '수', '목', '금', '토');
     var year= exp.getFullYear();
     var month = exp.getMonth()+1;
@@ -49,7 +53,7 @@ export const TaskDetailModal = (props) => {
     var dayName = week[exp.getDay()];
     var dateToKorean=year+'년 '+month+'월 '+day+'일 '+dayName+'요일 ';
     setFormattedDate(dateToKorean);
-    
+    setOpen(false);
   }
     return (
     <Modal
@@ -90,8 +94,8 @@ export const TaskDetailModal = (props) => {
               </View>
               <DatePicker modal open={open} date={exp} minimumDate={new Date()} mode={'date'} textColor={'#191970'}
                 onConfirm={ (exp) =>{
-                  confirm(exp)
-                  setOpen(false)
+                  setExp(exp)
+                  setChangeDate(chageDate+1)
                 }
                 }
                 onCancel={() => {
