@@ -1,28 +1,27 @@
-import React, { useState, useEffect } from 'react';
-import { SafeAreaView, FlatList, StyleSheet, Text, View, Image , Alert, Dimensions, Button, Easing,
+import React, { useState, useEffect, useRef } from 'react';
+import { SafeAreaView, FlatList, StyleSheet, Text, View, Image , Alert,
   TouchableOpacity, } from 'react-native';
 import { TodoContext } from '../todoContext';
 import { AuthContext } from '../authcontext';
 import SQLite from 'react-native-sqlite-storage';
 import { TaskDetailModal } from '../modal/TaskDetailModal';
 import {TouchableWithoutFeedback, } from 'react-native-gesture-handler';
-import Animated, {
+import  Animated, { useSharedValue, useAnimatedStyle,withTiming,withSpring, 
 } from 'react-native-reanimated';
-import { SwipeListView } from 'react-native-swipe-list-view';
 
-const rowTranslateAnimatedValues = []
 const db = SQLite.openDatabase({name: 'testDB5', location: 'default', createFromLocation: 2,}) 
+const reanimatedStyle = []
 const TodoList_v2 = (props) => {
+  
   const todoContext = React.useContext(TodoContext);
   const authContext = React.useContext(AuthContext);
-  
   const [showBox, setShowBox] = useState(true);
   const [noTask, setNoTask] = useState(0); 
   const [taskDetailModal,setTaskDetailModal]=useState({
     modal : false,
     task_no : 0
   });
-  const [animated,setAnimated]=useState(new Animated.Value(0));
+  
   useEffect(() => {
     console.log("getTaskDEtail")
     setNoTask(noTask+1)
@@ -44,10 +43,6 @@ const TodoList_v2 = (props) => {
                   todoContext.task_prior[i]=priority
                   todoContext.task_exp[i]=res.rows.item(i).exp
                   todoContext.performed[i]=res.rows.item(i).performed
-                  
-                  rowTranslateAnimatedValues[i] = new Animated.Value();
-                  rowTranslateAnimatedValues[i].Value=1
-                  console.log("row Value at SElect: "+rowTranslateAnimatedValues[i].Value)
                }
            }
            }, error => {
@@ -113,59 +108,61 @@ const TodoList_v2 = (props) => {
       );
     });
   }
-  const renderHiddenItem = () => (
-    <View style={styles.hidden} >
-      <Text style={styles.hiddenText}> Tisk</Text>
-    </View>  
-  );
-  const Ani = (index) => {
-    setAnimated(0)
-    console.log("Animated?:"+animated)
-    console.log("rowTranslate2 :"+rowTranslateAnimatedValues[index].Value)
-    Animated.timing(animated, {
-      toValue:0,
-      duration:5500,
-      Easing
 
-    }).start();
+  var len=todoContext.task_no.length;
+  const progress=useSharedValue(30)
+  reanimatedStyle.length=len
+  reanimatedStyle[0]=useAnimatedStyle(()=> {
+    // console.log("progressValue:"+progress.value)
+    return{ 
+      transform:[{translateX:progress.value}], 
+      }
+  })
+  reanimatedStyle[1]=useAnimatedStyle(()=> {
+    // console.log("progressValue:"+progress.value)
+    return{ 
+      transform:[{translateX:progress.value}], 
+      
+      }
+  })
+  const oneStyle= useAnimatedStyle(()=> {
+    // console.log("progressValue:"+progress.value)
+    return{ 
+      transform:[{translateX:progress.value}], 
+      flex:1,
+      }
+  })
+  
+  const animated = i => {
+    console.log(i)
+    progress.value=withSpring(-progress.value)
   }
-  console.log('todolistv2')
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
         { noTask ===0 ? 
         <View style={{width:300, alignSelf:'center', alignItems:'center'}} scrollEnabled={false} >
         <Text style={styles.noTasktext}> No Task Yet ... </Text>
         <Image source={ require('../assets/task.png')}  style={{width:300, height:300, marginTop:-30}} />
         </View>
         : 
-        <SwipeListView
-        disableRightSwipe
-        useNativeDriver={false}
-        rightOpenValue={-Dimensions.get('window').width}
-        renderHiddenItem={renderHiddenItem}
-        data={todoContext.task_name, todoContext.task_prior, todoContext.task_exp, todoContext.task_no, todoContext.performed }
+        
+        <FlatList  
+data={todoContext.task_name, todoContext.task_prior, todoContext.task_exp, todoContext.task_no, todoContext.performed }
         renderItem={({ index }) => (  
-          <SafeAreaView>
-          <Animated.View style={[  // 처음은 정적 스타일, 두번째는 시간이 지남에 따라 변경할 스타일
-            {
-              opacity:0.1
-            },
-            {
-              opacity:animated
-            },
-          ]} 
-          >
-            <Button onPress={() => Ani(index)} title="Buttom"/>
-            <TouchableOpacity onPress={() => details(todoContext.task_no[index]) }
-              style={todoContext.performed[index]==1 ? {backgroundColor:'#dcdcdc', opacity:0.9, borderRadius:6} : {}   }
-              key={index.toString()}>
+            <Animated.View  key={index.toString()}  style={{transform: [{translateX}]}} >
+            <TouchableOpacity onPress={ () => {animated(index)}} key={index.toString()}
+            // onPress={() => details(todoContext.task_no[index])*/ 
+            >
               <View style={todoContext.task_prior[index]==="High" ? styles.HighPriority : styles.itemContainer}> 
                   <View style={{flexDirection:'row' }}>
-                      <Text style={styles.listtext} ellipsizeMode={'tail'} numberOfLines={1} >{todoContext.task_name[index]} { todoContext.task_no[index]}  </Text>
+                      <Text style={styles.listtext} ellipsizeMode={'tail'} numberOfLines={1} >
+                        {todoContext.task_name[index]} { todoContext.task_no[index]} 
+                      </Text>
                       <Text style={styles.priorityText}>[ {todoContext.task_prior[index]} ]</Text>
                       <View>
                       <TouchableOpacity onPress={() => deleteTask(todoContext.task_no[index], index)}>
-                      <Image source={require("../assets/bin3.png")} style={{width:35, height:30, marginTop:5, right:7, marginLeft:5}}/>
+                      <Image source={require("../assets/bin3.png")} 
+                      style={{width:35, height:30, marginTop:5, }}/>
                       </TouchableOpacity>
                       </View>
                   </View>
@@ -173,7 +170,8 @@ const TodoList_v2 = (props) => {
                     <Text style={styles.exp}> 기한 -  {todoContext.task_exp[index]}</Text>
                     <View>
                     {todoContext.performed[index] == 0 ?  
-                      <TouchableOpacity style={styles.notComplete} onPress={() => complete(todoContext.task_no[index],index)}>
+                      <TouchableOpacity style={styles.notComplete} 
+                      onPress={() => complete(todoContext.task_no[index],index)}>
                         <Text style={styles.perforemd}> 완 료</Text>  
                       </TouchableOpacity>
                     : 
@@ -184,117 +182,96 @@ const TodoList_v2 = (props) => {
                     </View>    
                   </View>
               </View>
+              
             </TouchableOpacity>
           </Animated.View>
-          </SafeAreaView>
+
         )}
       />
     }
     <TaskDetailModal modalOn={taskDetailModal.modal} modalOff={ () => setTaskDetailModal(false, 1)}
                     task_no={taskDetailModal.task_no} />
-  </SafeAreaView>
+  </View>
   );
 };
 
 export default TodoList_v2;
 const styles=StyleSheet.create({
-  hidden:{
+  box:{
+    flex:1, 
+  },
+  container : {
+     width:340,
+  },
+  task:{
     justifyContent: 'center',
-    color:'white',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  },
+  itemContainer : {
     flex:1,
+    marginTop:10,
+    backgroundColor:'white',
+    borderRadius:7,
+    marginRight:50,
+    },
+  listtext : {
+    fontFamily:"BMJUA",
+    color:"#191970",
+    fontSize:20,
+    width:'55%',
+    marginLeft:8,
+    marginTop:10
+    },
+  noTasktext : {
+      alignSelf:'center',
+      fontFamily:"BMJUA",
+      color:"white",
+      fontSize:32,
+      width:200,
+      marginLeft:27,
+      marginTop:10
   },
-  hiddenText:{
+  priorityText : {
+      fontFamily:"BMJUA",
+      color:"#191970",
+      fontSize:20,
+      width:85,
+      marginLeft:3,
+      marginTop:10
+  },
+  itemTaskContainer:{
+      flexDirection:'row',
+  },
+  HighPriority:{
+      flex:1,
+      marginTop:10,
+      backgroundColor:'#FFC0CB',
+      borderRadius:7,
+      shadowColor: "pink",
+      shadowOffset: {
+          width: 0,
+          height: 7,
+      },
+      shadowOpacity: 0.43,
+      shadowRadius: 9.51,
+      elevation: 15,
+  },
+  addModal: {
     alignItems: 'center',
-    bottom: 0,
     justifyContent: 'center',
-    position: 'absolute',
-    top: 0,
-    width: 75,
-    color:'white',
+    backgroundColor: '#191970',
+    borderWidth: 5,
+    borderColor: 'white',
+    borderRadius: 30,
+    width: 300,
+    height:400,
+    marginLeft: 25,
   },
-    container : {
-        flex:1,
-    },
-    task:{
-      justifyContent: 'center',
-    },
-    itemContainer : {
-        flex:1,
-        marginTop:10,
-        backgroundColor:'white',
-        borderRadius:7,
-        shadowColor: "pink",
-        shadowOffset: {
-            width: 0,
-            height: 12,
-        },
-        shadowOpacity: 0.43,
-        shadowRadius: 9.51,
-        elevation: 15,
-
-    },
-    listtext : {
-        fontFamily:"BMJUA",
-        color:"#191970",
-        fontSize:20,
-        width:'55%',
-        marginLeft:8,
-        marginTop:10
-    },
-    noTasktext : {
-        alignSelf:'center',
-        fontFamily:"BMJUA",
-        color:"white",
-        fontSize:32,
-        width:200,
-        marginLeft:27,
-        marginTop:10
-    },
-    priorityText : {
-        fontFamily:"BMJUA",
-        color:"#191970",
-        fontSize:20,
-        width:85,
-        marginLeft:3,
-        marginTop:10
-    },
-    itemTaskContainer:{
-        flexDirection:'row',
-    },
-    HighPriority:{
-        flex:1,
-        marginTop:10,
-        backgroundColor:'#FFC0CB',
-        borderRadius:7,
-        shadowColor: "pink",
-        shadowOffset: {
-            width: 0,
-            height: 7,
-        },
-        shadowOpacity: 0.43,
-        shadowRadius: 9.51,
-        elevation: 15,
-    },
-    addModal: {
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: '#191970',
-      borderWidth: 5,
-      borderColor: 'white',
-      borderRadius: 30,
-      width: 300,
-      height:400,
-      marginLeft: 25,
-    },
-    modalheader: {
-      fontFamily: 'BMJUA',
-      fontSize: 22,
-      color: 'white',
-      marginTop: 10,
-    },
-    
+  modalheader: {
+    fontFamily: 'BMJUA',
+    fontSize: 22,
+    color: 'white',
+    marginTop: 10,
+  },
   addTaskContent: {
     flex: 1,
     alignItems: 'center',
@@ -441,5 +418,5 @@ const styles=StyleSheet.create({
     borderRadius:5,
     opacity:0.7,
   },
-  
+    
 })

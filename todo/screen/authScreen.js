@@ -42,8 +42,8 @@ export const authScreen = ({ navigation }) => {
   const [loginNotNullModal, setLoginNotNullModal] = useState(false);
   const [pwdErrorModal, setPwdErrorModal]=useState(false);
 
-  const [id, setId] = React.useState(null);
-  const [pwd, setPwd] = React.useState(null);
+  const [id, setId] = React.useState("Aldne");
+  const [pwd, setPwd] = React.useState("121212");
  
   const login = () => {
     console.log("pwd : "+pwd+ " id : "+id)
@@ -132,6 +132,7 @@ export const authScreen = ({ navigation }) => {
           onChangeText={id => setId(id)}
           placeholder="아이디 입력해주세요."
           placeholderTextColor="#191970"
+          defaultValue="Aldne"
           maxLength={22}
         />
         <TextInput
@@ -140,6 +141,7 @@ export const authScreen = ({ navigation }) => {
           secureTextEntry={true}
           placeholder="비밀번호를 입력해주세요"
           placeholderTextColor="#191970"
+          defaultValue="121212"
           maxLength={22}
 
         />
