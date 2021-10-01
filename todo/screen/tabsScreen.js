@@ -6,21 +6,24 @@ import { TodoContext } from '../todoContext';
 import { ProfileStackScreen } from './profileRoot';
 import AsyncStorage from '@react-native-community/async-storage';
 import { AuthContext } from '../authcontext';
+import { TodoList_v3 } from './test';
 import SQLite  from 'react-native-sqlite-storage';
+import { TodoStackScreen } from './todoStack';
 
 export const TabsScreen =  props  => {
   const db = SQLite.openDatabase({name: 'testDB5', location: 'default', createFromLocation: 2,})
   const authContext=React.useContext(AuthContext);
   const todoContext =React.useContext(TodoContext)
+  const [render,reRender]=useState(0)
   const Tabs = createBottomTabNavigator();
   const [ getLengthForBadge, setLength ] = useState(0)
+  //useEffect로 설정
   db.transaction(tx => { //검색되는 튜플 자체가 없다면 테이블 생성
     tx.executeSql(
       'SELECT task_no FROM task_info2',[],
       (tx,res)=>{
         var len=res.rows.length;
-        if(len>0){}
-        else if(len===0){
+        if(len===0){
           db.transaction(tx => {
             tx.executeSql(
                 'CREATE TABLE IF NOT EXISTS task_info2 ('
@@ -31,7 +34,6 @@ export const TabsScreen =  props  => {
                 +'exp VARCHAR(100),'
                 +'performed boolean,'
                 +'FOREIGN KEY(user_no) REFERENCES user_info(user_no) ON DELETE CASCADE)',
-                
                 [],
                 (tx , res) => {
                     console.log("Tasktable created");
@@ -44,7 +46,8 @@ export const TabsScreen =  props  => {
     }
     )
   })
-  useEffect(() => {
+  useEffect(() => { // context 재렌더링
+
     setInterval(() => { //비동기 처리는 이렇게 하는거밖에 방법이 없는거야?
       db.transaction(tx => { //badge 형성을 위해 해당 user_no의 남아있는 todoList length 출력
         tx.executeSql(
@@ -85,11 +88,16 @@ export const TabsScreen =  props  => {
     console.log("로그아웃 실행")
     props.navigation.navigate("Auth")
   }
-  
+  const optOfTabNavi= () => {
+    return{
+      
+    }
+  }
   return (
+    //컴포넌트화 
     <TodoContext.Provider value={todoContext}>
-      <Tabs.Navigator initialRouteName="To do"  >
-        <Tabs.Screen name="Profile" component={ProfileStackScreen}  
+      <Tabs.Navigator initialRouteName="Task"  >
+        <Tabs.Screen name="Profile" component={ProfileStackScreen} 
         options={{  tabBarActiveTintColor: "#00af9d" , 
         tabBarLabelStyle : { fontFamily:"BMJUA", fontSize: 14, } ,headerStyle: { backgroundColor:'#E0ffff' } ,
         headerTitleStyle:{ fontFamily:'BMJUA' }, 
@@ -105,6 +113,21 @@ export const TabsScreen =  props  => {
         }}
         />
         <Tabs.Screen name="To do" component={Todo}
+        options={{  tabBarBadge :  getLengthForBadge ,tabBarActiveTintColor: "#00af9d" , 
+        headerTitleStyle:{ fontFamily:'BMJUA' }, headerStyle: { backgroundColor:'#E0ffff' } ,
+        headerRight: () => (
+              <TouchableOpacity style={styles.btnView} onPress={outFromTab}>
+               <Text style={styles.logoutBtn}>Logout</Text>
+             </TouchableOpacity>         
+             ),
+          tabBarIcon: ( {  } ) => { 
+            return (
+              <Image source={require('../assets/128x128.png')} style={{width:30, height:30}}/>
+            );
+          } 
+        }}
+        />
+        <Tabs.Screen name="Task" component={TodoList_v3}
         options={{  tabBarBadge :  getLengthForBadge ,tabBarActiveTintColor: "#00af9d" , 
         headerTitleStyle:{ fontFamily:'BMJUA' }, headerStyle: { backgroundColor:'#E0ffff' } ,
         headerRight: () => (

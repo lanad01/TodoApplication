@@ -27,6 +27,7 @@ export const Todo = ( {navigation}) => {
     });
     return unsubscribe;
   }, [render]);
+
   const [modal, setModal] = useState(false); // 태스크 추가 모달
   const [open, setOpen] = useState(false); // 달력 모달 오픈
 

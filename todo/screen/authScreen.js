@@ -42,8 +42,8 @@ export const authScreen = ({ navigation }) => {
   const [loginNotNullModal, setLoginNotNullModal] = useState(false);
   const [pwdErrorModal, setPwdErrorModal]=useState(false);
 
-  const [id, setId] = React.useState("Aldne");
-  const [pwd, setPwd] = React.useState("121212");
+  const [id, setId] = React.useState();
+  const [pwd, setPwd] = React.useState();
  
   const login = () => {
     console.log("pwd : "+pwd+ " id : "+id)
@@ -52,7 +52,7 @@ export const authScreen = ({ navigation }) => {
     }else{
     db.transaction( (tx) => { //우선 id pwd 모든 박스를 가져온다
       tx.executeSql(
-        'SELECT id FROM user_info WHERE id=?  ',
+        'SELECT id FROM user_info WHERE id=? ', //select  반드시 count
         [id],
         (tx,res) => {
           var len=res.rows.length;
@@ -62,10 +62,10 @@ export const authScreen = ({ navigation }) => {
           }else if(len>0){
             db.transaction( (tx) => {
               tx.executeSql(
-                'SELECT pwd FROM user_info WHERE id=?',
+                'SELECT pwd FROM user_info WHERE id=?', // 
                 [id],
                 (tx,res)=>{
-                  var pwdValid=res.rows.item(0).pwd;
+                  let pwdValid=res.rows.item(0).pwd;
                   console.log("------ Selected Pwd : "+pwdValid);
                   if(pwdValid===pwd){ //최종 일치 분기
                     getUser_no();
@@ -86,9 +86,9 @@ export const authScreen = ({ navigation }) => {
   const getUser_no = () => {
     db.transaction ( tx => {
       tx.executeSql(
-        'SELECT * FROM user_info WHERE id=?',
+        'SELECT * FROM user_info WHERE id=?', // select all 조심 , 컬럼명 명시 권장
         [id],
-        (tx, res) => {
+        (tx, res) => {// 
           var selected=res.rows
           var user_no=selected.item(0).user_no;
           AsyncStorage.setItem('user_no', JSON.stringify(user_no), () => { 
@@ -103,6 +103,7 @@ export const authScreen = ({ navigation }) => {
           var job=selected.item(0).job;
           var regi_date=selected.item(0).regi_date;
           var image=selected.item(0).image;
+          // context 값 선언 방법 변경 권장 export 
           authContext.id=id;
           authContext.pwd=pwd;
           authContext.name=name;
@@ -132,7 +133,7 @@ export const authScreen = ({ navigation }) => {
           onChangeText={id => setId(id)}
           placeholder="아이디 입력해주세요."
           placeholderTextColor="#191970"
-          defaultValue="Aldne"
+          // defaultValue="Aldne"
           maxLength={22}
         />
         <TextInput
@@ -141,7 +142,7 @@ export const authScreen = ({ navigation }) => {
           secureTextEntry={true}
           placeholder="비밀번호를 입력해주세요"
           placeholderTextColor="#191970"
-          defaultValue="121212"
+          // defaultValue="121212"
           maxLength={22}
 
         />

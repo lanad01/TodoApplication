@@ -1,58 +1,74 @@
-import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Dimensions,
-  Animated,
-  TouchableOpacity,
-} from 'react-native';
-import Swipeable from 'react-native-gesture-handler/Swipeable';
+import React, { Component } from "react";
+import { Animated, View, StyleSheet, PanResponder, Text, TouchableOpacity } from "react-native";
+import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 
-const SCREEN_WIDTH = Dimensions.get('window').width;
+class App extends Component {
+  pan = new Animated.ValueXY();
+  panResponder = PanResponder.create({
+    onMoveShouldSetPanResponder: (evt, gestureState) =>{
+    return !(gestureState.dx === 0 && gestureState.dy === 0)
+    } ,
+    onPanResponderGrant: () => {
+      this.pan.setOffset({
+        x: this.pan.x._value,
+        y: this.pan.y._value
+      });
+    },
+    onPanResponderMove: Animated.event([
+      null,
+      { dx: this.pan.x, dy: this.pan.y }
+    ]),
+    onPanResponderRelease: () => {
+      this.pan.flattenOffset();
+    }
 
-const ItemBox = () => {
-  const leftSwipe = (progress, dragX) => {
-    console.log("ddd")
-    const scale = dragX.interpolate({
-      inputRange: [0, 100],
-      outputRange: [0, 1],
-      extrapolate: 'clamp',
-    });
+  });
+  
+  render() {
+    const test1 = () => {
+      console.log("Test Succes?")
+    }
     return (
-      <TouchableOpacity activeOpacity={0.6}>
-        <View style={styles.deleteBox}>
-          <Animated.Text style={{transform: [{scale: scale}]}}>
-            Delete
-          </Animated.Text>
-        </View>
-      </TouchableOpacity>
-    );
-  };
-  return (
-    <Swipeable renderLeftActions={leftSwipe}>
       <View style={styles.container}>
-        <Text>My name is</Text>
+        <Text style={styles.titleText}>Drag this box!</Text>
+        
+        <Animated.View
+          style={{
+            transform: [{ translateX: this.pan.x }, { translateY: this.pan.y }]
+          }}
+          {...this.panResponder.panHandlers}
+        >
+          <View style={styles.box}>
+        <TouchableOpacity onPress={()=>{alert('d')}}>
+            <View style={{width:100,height:100,backgroundColor:'yellow'}}/>
+          </TouchableOpacity>
+            </View>
+          {/* <TouchableOpacity onPress={test1} style={{width:150, backgroundColor:'yellow', height:100}}>
+          
+          </TouchableOpacity> */}
+
+        </Animated.View>
       </View>
-    </Swipeable>
-  );
-};
-
-export default ItemBox;
-
+    );
+  }
+}
 const styles = StyleSheet.create({
   container: {
-    height: 80,
-    width: SCREEN_WIDTH,
-    backgroundColor: 'white',
-    justifyContent: 'center',
-    padding: 16,
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center"
   },
-  deleteBox: {
-    backgroundColor: 'red',
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: 100,
-    height: 80,
+  titleText: {
+    fontSize: 14,
+    lineHeight: 24,
+    fontWeight: "bold"
   },
+  box: {
+    height: 150,
+    width: 150,
+    backgroundColor: "blue",
+    borderRadius: 5
+  }
 });
+
+export default App;

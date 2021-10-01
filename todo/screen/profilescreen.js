@@ -5,14 +5,6 @@ import { AuthContext } from '../authcontext';
 
 export const Profile = ({ navigation }) => {
   const authContext = React.useContext(AuthContext);
-  var strToDate = new Date(authContext.regi_date);
-  var week = new Array('일', '월', '화', '수', '목', '금', '토');
-  var localTime = strToDate.toLocaleTimeString();
-  var year = strToDate.getFullYear();
-  var month = strToDate.getMonth()+1;
-  var day = strToDate.getDate();
-  var dayName = week[strToDate.getDay()];
-  var dateToKorean=year+'년 '+month+'월 '+day+'일 '+dayName+'요일 '+localTime.substring(0,5);
   
   const config = { velocityThreshold: 0.5, directionalOffsetThreshold: 80 };
   function onSwipe(gestureName, gestureState) {
@@ -35,7 +27,7 @@ export const Profile = ({ navigation }) => {
   function editProfile(){
     navigation.replace("ProfileEdit");
   }
-  return (
+  return ( //svg
     <GestureRecognizer
       style={{ height:"100%"}}
       onSwipe={(direction, state) => onSwipe(direction, state)}
@@ -62,7 +54,7 @@ export const Profile = ({ navigation }) => {
         <View style={styles.bottom}>
           <View style={styles.detailContainer}>
             <Text style={styles.detailCategory}> ■ Register Date </Text>
-            <Text style={styles.detailContent }>  -  {dateToKorean} </Text>
+            <Text style={styles.detailContent }>  -  {authContext.regi_date} </Text>
           </View>
           <View style={styles.detailContainer2}>
             <Text style={styles.detailCategory}> ■ Job </Text>

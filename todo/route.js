@@ -12,14 +12,7 @@ import { authScreen } from "./screen/authScreen";
 export default () => {
   const db = SQLite.openDatabase({ name: 'testDB5', location: 'default', createFromLocation: 2, } );
   const createTable = () => {
-    db.transaction(tx => {
-      tx.executeSql(
-        'SELECT * FROM user_info',
-        [],
-        (tx, res)=> {
-          var len=res.rows.length;
-          if(len === 0){ 
-            db.transaction(tx => {
+          db.transaction(tx => {
               tx.executeSql(
                   'CREATE TABLE IF NOT EXISTS user_info ('
                     +'user_no INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,'
@@ -39,19 +32,17 @@ export default () => {
                   }
               );
           });
-          }
-        }
-      )
-    })
-  };
+  }
+  
   useEffect(() => {
     createTable();
   }, []
   );
   const [user_no, setUserNo] = useState(null);
-  autoLogin = async () => { // 비동기 처리를 해야 나중에 받아온 자료로 setUser_no 설정이 가능해집니다.
+  
+  autoLogin = () => { 
     try{
-      const loginedNo= await AsyncStorage.getItem("user_no");
+      const loginedNo= AsyncStorage.getItem("user_no");
       setUserNo(loginedNo);
     }catch(err){
       console.log(err)

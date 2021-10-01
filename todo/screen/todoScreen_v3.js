@@ -6,14 +6,13 @@ import { AuthContext } from '../authcontext';
 import SQLite from 'react-native-sqlite-storage';
 import { TaskDetailModal } from '../modal/TaskDetailModal';
 import {TouchableWithoutFeedback, } from 'react-native-gesture-handler';
-import  Animated, { useSharedValue, useAnimatedStyle,withTiming,withSpring,  
+import  Animated, { useSharedValue, useAnimatedStyle,withTiming,withSpring, 
 } from 'react-native-reanimated';
 
 const db = SQLite.openDatabase({name: 'testDB5', location: 'default', createFromLocation: 2,}) 
-const progress = [];
-
+const reanimatedStyle = []
 const TodoList_v2 = (props) => {
-
+  
   const todoContext = React.useContext(TodoContext);
   const authContext = React.useContext(AuthContext);
   const [showBox, setShowBox] = useState(true);
@@ -44,7 +43,6 @@ const TodoList_v2 = (props) => {
                   todoContext.task_prior[i]=priority
                   todoContext.task_exp[i]=res.rows.item(i).exp
                   todoContext.performed[i]=res.rows.item(i).performed
-                  
                }
            }
            }, error => {
@@ -110,29 +108,29 @@ const TodoList_v2 = (props) => {
       );
     });
   }
-  Array(10)
-  .fill('')
-  .forEach((_, i) => {
-      progress[`${i}`] = useSharedValue(30);
-  });
-  const reanimatedStyle=useAnimatedStyle(()=>{
-    return{ marginRight:40,transform:[{translateX:progress[0].value,}],
-  }})
 
-  reanimatedStyle[0]=useAnimatedStyle(()=>{return{ marginRight:40,transform:[{translateX:progress[0].value,}],}})
-  reanimatedStyle[1]=useAnimatedStyle(()=>{return{ marginRight:40,transform:[{translateX:progress[1].value}],}})
-  reanimatedStyle[2]=useAnimatedStyle(()=>{return{ marginRight:40,transform:[{translateX:progress[2].value}],}})
-  reanimatedStyle[3]=useAnimatedStyle(()=>{return{ marginRight:40,transform:[{translateX:progress[3].value}],}})
-  reanimatedStyle[4]=useAnimatedStyle(()=>{return{ marginRight:40,transform:[{translateX:progress[4].value}],}})
+  var len=todoContext.task_no.length;
+  const progress=useSharedValue(30)
+  reanimatedStyle.length=len
+  
+  reanimatedStyle[0]=useAnimatedStyle(()=> {
+    // console.log("progressValue:"+progress.value)
+    return{ 
+      transform:[{translateX:progress.value}], 
+      }
+  })
+  reanimatedStyle[1]=useAnimatedStyle(()=> {
+    // console.log("progressValue:"+progress.value)
+    return{ 
+      transform:[{translateX:progress.value}], 
+      }
+  })
   
   const animated = i => {
-    console.log(progress[i].value)
-    progress[i].value=withSpring(-progress[i].value,0.1,(isFinished)=> {
-      console.log("isFinished")
-      
-    })
-
+    console.log(i)
+    progress.value=withSpring(-progress.value)
   }
+ 
   return (
     <View style={styles.container}>
         { noTask ===0 ? 
@@ -141,20 +139,15 @@ const TodoList_v2 = (props) => {
         <Image source={ require('../assets/task.png')}  style={{width:300, height:300, marginTop:-30}} />
         </View>
         : 
-        <FlatList 
+        <FlatList  
 data={todoContext.task_name, todoContext.task_prior, todoContext.task_exp, todoContext.task_no, todoContext.performed }
-        renderItem={({ item, index }) => (  
-            <View >
-              <TouchableOpacity onPress={() => deleteTask(todoContext.task_no[index], index)} 
-              style={{flex:1, marginLeft:255 ,marginTop:27 , position:'absolute'}}>
-                <Image source={require("../assets/bin3.png")} 
-                  style={{width:44, height:37, zIndex:1}}/>
-              </TouchableOpacity>
-            <Animated.View   key={index.toString()} style={ reanimatedStyle} >
-               <View style={{flexDirection:'row'}}>
-               <TouchableOpacity onPress={ () => {animated(index)}} style={{zIndex:3}} 
+        renderItem={({ index }) => (  
+         
+            <Animated.View   key={index.toString()} style={reanimatedStyle[index]} >
+               
+            <TouchableOpacity onPress={ () => {animated(index)}} 
             // onPress={() => details(todoContext.task_no[index])*/ 
-               >
+            >
               <View style={todoContext.task_prior[index]==="High" ? styles.HighPriority : styles.itemContainer}> 
                   <View style={{flexDirection:'row' }}>
                       <Text style={styles.listtext} ellipsizeMode={'tail'} numberOfLines={1} >
@@ -162,7 +155,10 @@ data={todoContext.task_name, todoContext.task_prior, todoContext.task_exp, todoC
                       </Text>
                       <Text style={styles.priorityText}>[ {todoContext.task_prior[index]} ]</Text>
                       <View>
-                      
+                      <TouchableOpacity onPress={() => deleteTask(todoContext.task_no[index], index)}>
+                      <Image source={require("../assets/bin3.png")} 
+                      style={{width:35, height:30, marginTop:5, }}/>
+                      </TouchableOpacity>
                       </View>
                   </View>
                   <View style={{flexDirection:'row'}}>
@@ -176,16 +172,15 @@ data={todoContext.task_name, todoContext.task_prior, todoContext.task_exp, todoC
                     : 
                     <TouchableWithoutFeedback style={styles.complete}>
                         <Text style={styles.perforemd}> 완료됨</Text>  
-                    </TouchableWithoutFeedback>
+                      </TouchableWithoutFeedback>
                     }
                     </View>    
                   </View>
               </View>
               
             </TouchableOpacity>
-            </View>
+
           </Animated.View>
-          </View>
         )}
       />
     }
@@ -395,8 +390,6 @@ const styles=StyleSheet.create({
     alignSelf:'center',
     marginTop:5,
     marginLeft:10,
-    marginRight:10,
-
     height:30,
     width:50,
     borderRadius:5,
@@ -415,7 +408,6 @@ const styles=StyleSheet.create({
     alignSelf:'center',
     marginTop:5,
     marginLeft:10,
-    marginRight:10,
     height:30,
     width:50,
     borderRadius:5,

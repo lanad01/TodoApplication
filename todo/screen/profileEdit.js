@@ -20,7 +20,9 @@ const ProfileEdit = ({navigation}) => {
   const [newName, setNewName]=useState(null); // not null
   const [newEmail,setNewEmail]=useState(null);
   const [newJob,setNewJob]=useState(null);
+  // const [ data, setData]=useState( [
 
+  // ])
   const [errorModal, setErrorModal]=useState(false)
   const [modalShow, setModal] = useState(false);
   const [pwdChangeModal, setPwdChangeModal]=useState(false);
