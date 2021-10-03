@@ -6,7 +6,8 @@ import { AuthContext } from '../authcontext';
 export const Profile = ({ navigation }) => {
   const authContext = React.useContext(AuthContext);
   
-  const config = { velocityThreshold: 0.5, directionalOffsetThreshold: 80 };
+  const config = { velocityThreshold: 0.5, directionalOffsetThreshold: 50 };
+
   function onSwipe(gestureName, gestureState) {
     const { SWIPE_UP, SWIPE_DOWN, SWIPE_LEFT, SWIPE_RIGHT } = swipeDirections;
     switch (gestureName) {
@@ -23,9 +24,6 @@ export const Profile = ({ navigation }) => {
         navigation.navigate("To do")
         break;
     }
-  }
-  function editProfile(){
-    navigation.replace("ProfileEdit");
   }
   return ( //svg
     <GestureRecognizer
@@ -46,7 +44,7 @@ export const Profile = ({ navigation }) => {
               style={styles.profileImage}/>
             <Text style={styles.nameText}> {authContext.name} </Text>
             <Text style={styles.emailText}> {authContext.email === null ? authContext.emailNull : authContext.email } </Text>
-            <TouchableOpacity onPress={editProfile} style={styles.editBox}>
+            <TouchableOpacity onPress={ () => navigation.replace("ProfileEdit") } style={styles.editBox}>
               <Text style={styles.editText }>  프로필 수정 </Text>
             </TouchableOpacity>
           </View>
@@ -64,7 +62,6 @@ export const Profile = ({ navigation }) => {
             <Text style={styles.detailCategory}> ■ City </Text>
             <Text style={styles.detailContent}>  - From DB </Text>
           </View>
-          
         </View>
       </View>
     </GestureRecognizer>

@@ -1,33 +1,21 @@
-import React, {useState, useEffect, useContext} from 'react';
-import {    StyleSheet,  Text,  View,  Image,  TextInput, 
-    TouchableOpacity } from 'react-native';
-import Modal from "react-native-modal";
+import React, {useState, useContext} from 'react';
+import {  StyleSheet,  Text,  View,  Image,  TextInput, TouchableOpacity } from 'react-native';
+
 import { AuthContext } from '../authcontext';
-import SQLite from 'react-native-sqlite-storage';
 import { ErrorModal } from '../modal/ErrorModal';
+import { DB } from '../globalVar';
 
 export const ResetPwd = ({navigation}) => {
-    const db = SQLite.openDatabase({
-        name: 'testDB5',
-        location: 'default',
-        createFromLocation: 2,
-    })
     const authContext=useContext(AuthContext);
     const [pwdVisible, setPwdVisible]=useState(true);
     const [newPwd, setNewPwd]=useState();
     const [pwdCheck, setPwdCheck]=useState();
     const [confirmFailedModal, setModal]=useState(false);
     const [errorMsg, setErrorMsg]=useState("오류");
-    const modalOff = () => {
-        setModal(false);
-    }
-    const goBack = () => {
-    navigation.replace("ProfileEdit")
-    }
     const confirm = () => {
         if(newPwd===pwdCheck && newPwd!=authContext.pwd){
             console.log("new pwd matched");
-            db.transaction(tx => {
+            DB.transaction(tx => {
                 tx.executeSql(
                     'UPDATE user_info SET pwd=? WHERE user_no=? ',
                     [newPwd,authContext.user_no],
@@ -36,7 +24,7 @@ export const ResetPwd = ({navigation}) => {
                         authContext.pwd=newPwd;
                         navigation.navigate("Profile1st")
                     }, error => {
-                      console.log("Update Failed"+error);
+                        console.log("Update Failed"+error);
                     }
                 );
               });
@@ -55,19 +43,19 @@ export const ResetPwd = ({navigation}) => {
     return(
         <View style={styles.container}>
             <View style={styles.header}>
-            <TouchableOpacity onPress={goBack} style={{marginBottom:20,}}>
+            <TouchableOpacity onPress={()=> navigation.replace("ProfileEdit")} style={{marginBottom:20,}}>
             <Image source={ require('../assets/back.png')}
             style={{width:60, height:60, marginLeft:5}}/>
             </TouchableOpacity>
                 <Text style={styles.headerText}> 비밀번호 수정</Text>
             
-                <View >
+                <View>
                     <Text style={styles.detailText}> 새로운 비밀번호 </Text>
                     <View style={{flexDirection:'row'}}>
                         <TextInput placeholder="새로운 비밀번호" style={styles.input} 
                         secureTextEntry={pwdVisible} onChangeText={ pwd => setNewPwd(pwd)} />
                         <TouchableOpacity onPress={ () => setPwdVisible(!pwdVisible)} 
-                        style={{marginLeft:64, height:34, marginTop:6}} >
+                            style={{marginLeft:64, height:34, marginTop:6}} >
                             <Image source={require('../assets/show.jpg')} 
                             style={{height:32,width:30, }}/>
                         </TouchableOpacity>
@@ -96,7 +84,7 @@ export const ResetPwd = ({navigation}) => {
                 </TouchableOpacity>
                 </View>
             </View>
-            <ErrorModal modalOn={confirmFailedModal} modalOff={modalOff} message={errorMsg} />
+            <ErrorModal modalOn={confirmFailedModal} modalOff={() => setModal(false)} message={errorMsg} />
         </View>
     )
 }

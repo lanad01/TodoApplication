@@ -1,74 +1,73 @@
-import React, { Component } from "react";
-import { Animated, View, StyleSheet, PanResponder, Text, TouchableOpacity } from "react-native";
-import { TouchableWithoutFeedback } from "react-native-gesture-handler";
+import Svg, {
+  Circle,
+  Ellipse,
+  G,
+  Text,
+  TSpan,
+  TextPath,
+  Path,
+  Polygon,
+  Polyline,
+  Line,
+  SvgUri,
+  Rect,
+  Use,
+  Image,
+  Symbol,
+  Defs,
+  LinearGradient,
+  RadialGradient,
+  Stop,
+  ClipPath,
+  Pattern,
+  Mask,
+} from 'react-native-svg';
 
-class App extends Component {
-  pan = new Animated.ValueXY();
-  panResponder = PanResponder.create({
-    onMoveShouldSetPanResponder: (evt, gestureState) =>{
-    return !(gestureState.dx === 0 && gestureState.dy === 0)
-    } ,
-    onPanResponderGrant: () => {
-      this.pan.setOffset({
-        x: this.pan.x._value,
-        y: this.pan.y._value
-      });
-    },
-    onPanResponderMove: Animated.event([
-      null,
-      { dx: this.pan.x, dy: this.pan.y }
-    ]),
-    onPanResponderRelease: () => {
-      this.pan.flattenOffset();
-    }
+/* Use this if you are using Expo
+import * as Svg from 'react-native-svg';
+const { Circle, Rect } = Svg;
+*/
 
-  });
-  
+import React from 'react';
+import { View, StyleSheet } from 'react-native';
+
+export default class SvgExample extends React.Component {
   render() {
-    const test1 = () => {
-      console.log("Test Succes?")
-    }
     return (
-      <View style={styles.container}>
-        <Text style={styles.titleText}>Drag this box!</Text>
-        
-        <Animated.View
-          style={{
-            transform: [{ translateX: this.pan.x }, { translateY: this.pan.y }]
-          }}
-          {...this.panResponder.panHandlers}
-        >
-          <View style={styles.box}>
-        <TouchableOpacity onPress={()=>{alert('d')}}>
-            <View style={{width:100,height:100,backgroundColor:'yellow'}}/>
-          </TouchableOpacity>
-            </View>
-          {/* <TouchableOpacity onPress={test1} style={{width:150, backgroundColor:'yellow', height:100}}>
-          
-          </TouchableOpacity> */}
+      <View
+        style={[
+          StyleSheet.absoluteFill,
+          { alignItems: 'center', justifyContent: 'center' },
+        ]}
+      >
+        <Svg height="50%" width="50%" viewBox="0 0 100 100">
+          <Circle
+            cx="50"
+            cy="50"
+            r="45"
+            stroke="blue"
+            strokeWidth="2.5"
+            fill="green"
+          />
+          <Rect
+            x="15"
+            y="15"
+            width="70"
+            height="70"
+            stroke="red"
+            strokeWidth="2"
+            fill="yellow"
+          />
+        </Svg>
+        <SvgUri
+    width="100%"
+    height="100%"
+    uri="http://thenewcode.com/assets/images/thumbnails/homer-simpson.svg"
+  />
+  <SvgUri width="25" height="25" source={require('../icons/ic_user.svg')} {...props}> </SvgUri>
 
-        </Animated.View>
+  
       </View>
     );
   }
 }
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center"
-  },
-  titleText: {
-    fontSize: 14,
-    lineHeight: 24,
-    fontWeight: "bold"
-  },
-  box: {
-    height: 150,
-    width: 150,
-    backgroundColor: "blue",
-    borderRadius: 5
-  }
-});
-
-export default App;

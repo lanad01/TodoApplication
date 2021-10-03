@@ -1,75 +1,67 @@
-import React, {useState, useEffect, useRef} from 'react';
-import { StyleSheet,  Text,  View,  Image,  TextInput,  KeyboardAvoidingView,  Platform,
+import React, {useState, useEffect} from 'react';
+import { Text,  View,  Image,  TextInput,  KeyboardAvoidingView,  Platform, Alert,
     TouchableOpacity, Keyboard } from 'react-native';
 import ImagePicker from 'react-native-image-crop-picker';
 import Modal from "react-native-modal";
+
 import { AuthContext } from '../authcontext';
 import { PwdChangeModal } from '../modal/PwdChangeModal';
-import SQLite from 'react-native-sqlite-storage';
 import { ErrorModal } from '../modal/ErrorModal';
+import { DB } from '../globalVar';
+import { styles } from './styles/profileEditStyle';
 
 const ProfileEdit = ({navigation}) => {
   const authContext = React.useContext(AuthContext);
-  const db = SQLite.openDatabase({
-    name: 'testDB5',
-    location: 'default',
-    createFromLocation: 2,
-  })
   const [pictureSelected, setPicture] = useState(false);
   const [profileImage, setProfileImage] = useState(authContext.image);
   const [newName, setNewName]=useState(null); // not null
-  const [newEmail,setNewEmail]=useState(null);
+  const [newEmail,setNewEmail]=useState(null); // 바꿀 email
   const [newJob,setNewJob]=useState(null);
   // const [ data, setData]=useState( [
 
   // ])
-  const [errorModal, setErrorModal]=useState(false)
+  const [errorModal, setErrorModal]=useState(false) //이름 불일치
   const [modalShow, setModal] = useState(false);
   const [pwdChangeModal, setPwdChangeModal]=useState(false);
   useEffect(()=> {
-    // console.log("pictureselected? "+pictureSelected )
-    Keyboard.addListener("keyboardDidHide", e => {// 키보드가 사라지면 화면을 직접 내려버린다.
+    Keyboard.addListener("keyboardDidHide", e => {  // 키보드가 사라지면 화면을 직접 내려버린다.
       setRise(0)
     })
     return() => { // useEffect에서 요기 return뒤의 값은 해당 컴포넌트가 종료될 때 실행된다
-      // console.log("사라짐");
-    }
+      console.log("Unmounted from Profile Edit")
+      Keyboard.removeAllListeners('keyboardDidHide'); //resource Leak 에러메시지 해결
+    },
+    []
   })
-  function registerPhoto(){
-    console.log(modalShow);
-    setModal(!modalShow);
-  }
-  function pickOnePhoto() {
-    ImagePicker.openPicker({
+  const cropPicker_Opt = () => {
+    return {
       cropping: true,
-      width: 500,
-      height: 500,
-      cropperCircleOverlay: true,
-      compressImageMaxWidth: 640,
-      compressImageMaxHeight: 480,
-      freeStyleCropEnabled: true,
       includeBase64: true,
-    }).then(image => {
+    }
+  }
+  function pickOnePhoto(){ //갤러리에서 선택
+    ImagePicker.openPicker({cropPicker_Opt})
+    .then(image => {
       setPicture(true);
       setProfileImage(image.path);
       setModal(!modalShow);
-    })
+    }).catch(e => {
+      if(e.code !== 'E_PICKER_CANCELLED') {
+        console.log(e);
+        Alert.alert('Sorry, there was an issue attempting to get the image/video you selected. Please try again');
+      }});
   }
   function callCamera() {
-    ImagePicker.openCamera({
-      cropping: true,
-      width: 500,
-      height: 500,
-      cropperCircleOverlay: true,
-      compressImageMaxWidth: 640,
-      compressImageMaxHeight: 480,
-      freeStyleCropEnabled: true,
-      includeBase64: true,
-    }).then(image => {
+    ImagePicker.openCamera({cropPicker_Opt})
+    .then(image => {
       setPicture(true);
       setProfileImage(image.path);
       setModal(!modalShow);
-    });
+    }).catch(e => {
+      if(e.code !== 'E_PICKER_CANCELLED') {
+        console.log(e);
+        Alert.alert('Sorry, there was an issue attempting to get the image/video you selected. Please try again');
+      }});
   }
   const saveConfirm = () => {
     if(newName===null){
@@ -92,58 +84,49 @@ const ProfileEdit = ({navigation}) => {
       console.log("프로필을 수정했을 때")
       authContext.image=profileImage;
     }
-    if(profileImage===authContext.image){
-      console.log("둘다 같을 때")
+    DB.transaction(tx => {
+        tx.executeSql(
+          'UPDATE user_info SET name=?,email=?,job=?, image=? WHERE user_no=?',
+          [newName,newEmail,newJob,authContext.image, authContext.user_no],
+          (tx , res) => {
+              console.log("update success")
+              authContext.name=newName;
+              authContext.email=newEmail;
+              authContext.job=newJob;
+              navigation.navigate("ProfileMain")
+          }, error => {
+            console.log("Update Failed"+error);
+          }
+      );
+      });
     }
-      db.transaction(tx => {
-          tx.executeSql(
-            'UPDATE user_info SET name=?,email=?,job=?, image=? WHERE user_no=?',
-            [newName,newEmail,newJob,authContext.image, authContext.user_no],
-            (tx , res) => {
-                console.log("update success")
-                authContext.name=newName;
-                authContext.email=newEmail;
-                authContext.job=newJob;
-                navigation.navigate("Profile1st")
-            }, error => {
-              console.log("Update Failed"+error);
-            }
-        );
-        });
-      }
-  function changePwd() {
-    setPwdChangeModal(true);
-  }
-  function resetPwd(){
-    console.log("Reset Pwd 도착")
-    navigation.navigate("resetPwd")
-  }
-  const goBack = () => {
-    navigation.replace("Profile1st")
-  }
-  const [rise, setRise] = useState();
+  const [rise, setRise] = useState(); //Keyboard Avoiding
   
   return (
     <KeyboardAvoidingView  behavior="position"style={{backgroundColor: '#191970', flex: 1, bottom : rise }}>
       <View style={{ backgroundColor: '#191970', height: 10, width: '100%' }} />
         <View style={styles.topContainer}>
-          <View style={{flexDirection:'row', justifyContent:'flex-start', alignSelf:'flex-start'}}>
-          <TouchableOpacity onPress={goBack}>
-          <Image source={ require('../assets/back.png')}
-          style={{width:60, height:60, marginTop:10, marginLeft:15}}/>
-          </TouchableOpacity>
+
+          <View style={styles.backBtnView}>
+            <TouchableOpacity onPress={ () => navigation.replace("ProfileMain")}>
+              <Image source={ require('../assets/back.png')}
+                style={styles.backImg}/>
+            </TouchableOpacity>
           </View>
-          <ErrorModal modalOn={errorModal} message="이름은 반드시 적어주셔야   합니다." modalOff={ () => setErrorModal(false)}/>
+
           <Image source={ pictureSelected ? { uri: profileImage } : {uri: authContext.image } }
             style={styles.profile}/>
           <TouchableOpacity
-            onPress={registerPhoto}
+            onPress={ () => setModal(!modalShow)}
             style={{ marginTop: -35, marginLeft: 140, }}>
             <Image source={require('../assets/cameraEidt.png')} style={{}} />
             {/* <Image source={ {uri : "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"}}/> */}
           </TouchableOpacity>
+
         </View>
-        <View style={styles.bottomContainer}>
+
+       {/* 하단부 디테일 */}
+        <View style={styles.bottomContainer}> 
           <View style={styles.categories}>
             <Text style={styles.text}> 이름(필수)</Text>
             <TextInput style={styles.input}  placeholder={authContext.name}
@@ -161,8 +144,7 @@ const ProfileEdit = ({navigation}) => {
           </View>
           <View style={styles.categories}>
             <Text style={styles.text}> 지 역</Text>
-            <TextInput style={styles.input} placeholder="Kalgoorlie Boulder"
-            onFocus={ () => setRise(150)}
+            <TextInput style={styles.input} placeholder="Kalgoorlie Boulder" onFocus={() => setRise(150)}
             />
             <View style={styles.inputUnderLine} />
           </View>
@@ -174,7 +156,7 @@ const ProfileEdit = ({navigation}) => {
             <View style={styles.inputUnderLine} />
           </View>
           <View style={{ flexDirection: 'row', alignSelf: 'center' }}>
-            <TouchableOpacity onPress={changePwd} style={styles.pwdChange}>
+            <TouchableOpacity onPress={ () => setPwdChangeModal(true)} style={styles.pwdChange}>
               <Text style={styles.pwdChangeText}> [ 비밀번호 변경 ]</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={saveConfirm} style={styles.editBox}>
@@ -182,8 +164,8 @@ const ProfileEdit = ({navigation}) => {
             </TouchableOpacity>
         </View>
         <PwdChangeModal 
-        modalOn={pwdChangeModal} modalOff={()=> setPwdChangeModal(false)} pwdVerify={authContext.pwd}
-        resetPwd={resetPwd} />
+          modalOn={pwdChangeModal} modalOff={()=> setPwdChangeModal(false)} pwdVerify={authContext.pwd}
+          resetPwd={ () => navigation.navigate("resetPwd") } />
       </View>
       <Modal isVisible={modalShow}  avoidKeyboard={true} transparent={true}
           style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -196,115 +178,17 @@ const ProfileEdit = ({navigation}) => {
             <TouchableOpacity onPress={callCamera} style={styles.choicebox}>
               <Text style={styles.photochoose}>사진 촬영</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={registerPhoto} style={styles.choicebox}>
+            <TouchableOpacity onPress={() => setModal(!modalShow)} style={styles.choicebox}>
               <Text textAlign="center" style={styles.photochoose}>
                 나 가 기
               </Text>
             </TouchableOpacity>
           </View>
+          <ErrorModal modalOn={errorModal} message="이름은 반드시 적어주셔야   합니다."
+            modalOff={ () => setErrorModal(false)}/>
         </Modal>  
     </KeyboardAvoidingView>
   );
 };
 export default ProfileEdit;
 
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: '#191970',
-    flex: 1,
-    
-  },
-  topContainer: {
-    alignItems: 'center',
-    backgroundColor: 'white',
-    height: 200,
-  },
-  bottomContainer: {
-    alignItems: 'center',
-    backgroundColor: 'white',
-    height: '64%',
-  },
-  categories: {
-    alignSelf: 'flex-start',
-    marginLeft: 10,
-    marginTop: 20,
-  },
-  text: {
-    textAlign: 'left',
-    fontFamily: 'BMJUA',
-    color: 'gray',
-    fontSize: 13,
-    opacity: 0.4,
-  },
-  input: {
-    width: 300,
-    marginTop: -9,
-    fontFamily: 'BMJUA',
-    color: '#191970',
-    fontSize: 20,
-  },
-  inputUnderLine: {
-    width: 300,
-    backgroundColor: 'gray',
-    height: 3,
-    opacity: 0.4,
-    marginTop: -7,
-  },
-  pwdChange: {
-    marginTop: 40,
-  },
-  pwdChangeText: {
-    fontFamily: 'BMJUA',
-    color: '#191970',
-    fontSize: 23,
-  },
-  editBox: {
-    backgroundColor: '#191970',
-    margin: 30,
-    height: 40,
-    width: 100,
-    borderColor: '#191970',
-    borderWidth: 3,
-  },
-  editText: {
-    textAlign: 'center',
-    fontFamily: 'BMJUA',
-    marginTop: 4,
-    marginRight: 3,
-    color: 'white',
-    fontSize: 23,
-  },
-  btn:{
-    textAlign:'center',
-    width:230,
-    alignItems:'center',
-    fontFamily:"BMJUA",
-    fontSize:30,
-    color:'#191970',
-    marginTop:4,
-    paddingTop:10,
-    borderWidth:5,
-    borderColor:'#191970',
-    borderRadius:30,
-  },
-  choicebox:{
-    alignItems:'center',
-    marginTop:15,
-  },
-  photochoose:{
-    textAlign:"center",
-    fontFamily:"BMJUA",
-    fontSize:23,
-    backgroundColor:'white',
-    borderRadius:7,
-    width:250,
-    height:50,
-    borderColor:'white',
-    borderWidth:5,
-    paddingTop:10,
-  },
-  profile:{
-    width: 190,  height: 180,marginTop: -60,  borderRadius: 60,borderWidth: 5,borderColor: 'powderblue',
-    
-  },
-});

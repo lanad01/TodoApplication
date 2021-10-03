@@ -8,8 +8,8 @@ import { TaskDetailModal } from '../modal/TaskDetailModal';
 import {TouchableWithoutFeedback, } from 'react-native-gesture-handler';
 import  Animated, { useSharedValue, useAnimatedStyle,withTiming,withSpring,  
 } from 'react-native-reanimated';
+import { DB  } from '../globalVar';
 
-const db = SQLite.openDatabase({name: 'testDB5', location: 'default', createFromLocation: 2,}) 
 const progress = [];
 
 const TodoList_v2 = (props) => {
@@ -24,9 +24,8 @@ const TodoList_v2 = (props) => {
   });
   
   useEffect(() => {
-    console.log("getTaskDEtail")
     setNoTask(noTask+1)
-      db.transaction( tx => {
+      DB.transaction( tx => {
          tx.executeSql(
            'SELECT * FROM task_info2 WHERE user_no=?',
            [authContext.user_no],
@@ -57,7 +56,7 @@ const TodoList_v2 = (props) => {
   }, [props.render])
 
   const deleteTaskImple = (task_no, index) => {
-    db.transaction(tx => {
+    DB.transaction(tx => {
         tx.executeSql(
             'DELETE FROM task_info2 WHERE task_no=?',
             [task_no],
@@ -97,7 +96,7 @@ const TodoList_v2 = (props) => {
   }
   const complete = (task_no, index) => {
     console.log(task_no)
-   db.transaction(tx => {
+   DB.transaction(tx => {
       tx.executeSql(
           'UPDATE task_info2 SET performed=true WHERE task_no=?',
           [task_no],
@@ -115,24 +114,87 @@ const TodoList_v2 = (props) => {
   .forEach((_, i) => {
       progress[`${i}`] = useSharedValue(30);
   });
-  const reanimatedStyle=useAnimatedStyle(()=>{
-    return{ marginRight:40,transform:[{translateX:progress[0].value,}],
-  }})
+  const [indexOfAnimate, setIndexOfAnimate]=useState();
+  const progress2=useSharedValue(30)
+  const reanimatedStyle=useAnimatedStyle( index =>{
+    console.log("index : "+index)
+    console.log("indexOfAnimate : "+indexOfAnimate)
+    if(indexOfAnimate==index){
+      console.log("Index Compariosn "+index)
+      return{ marginRight:40,transform:[{translateX:progress2.value,}]
+      }
+    }else{
+      return {  }
+    }
+    
+  })
 
-  reanimatedStyle[0]=useAnimatedStyle(()=>{return{ marginRight:40,transform:[{translateX:progress[0].value,}],}})
-  reanimatedStyle[1]=useAnimatedStyle(()=>{return{ marginRight:40,transform:[{translateX:progress[1].value}],}})
-  reanimatedStyle[2]=useAnimatedStyle(()=>{return{ marginRight:40,transform:[{translateX:progress[2].value}],}})
-  reanimatedStyle[3]=useAnimatedStyle(()=>{return{ marginRight:40,transform:[{translateX:progress[3].value}],}})
-  reanimatedStyle[4]=useAnimatedStyle(()=>{return{ marginRight:40,transform:[{translateX:progress[4].value}],}})
+  // reanimatedStyle[0]=useAnimatedStyle(()=>{return{ marginRight:40,transform:[{translateX:progress[0].value,}],}})
+  // reanimatedStyle[1]=useAnimatedStyle(()=>{return{ marginRight:40,transform:[{translateX:progress[1].value}],}})
+  // reanimatedStyle[2]=useAnimatedStyle(()=>{return{ marginRight:40,transform:[{translateX:progress[2].value}],}})
+  // reanimatedStyle[3]=useAnimatedStyle(()=>{return{ marginRight:40,transform:[{translateX:progress[3].value}],}})
+  // reanimatedStyle[4]=useAnimatedStyle(()=>{return{ marginRight:40,transform:[{translateX:progress[4].value}],}})
+  // reanimatedStyle[5]=useAnimatedStyle(()=>{return{ marginRight:40,transform:[{translateX:progress[5].value}],}})
+  // reanimatedStyle[6]=useAnimatedStyle(()=>{return{ marginRight:40,transform:[{translateX:progress[6].value}],}})
+  // reanimatedStyle[7]=useAnimatedStyle(()=>{return{ marginRight:40,transform:[{translateX:progress[7].value}],}})
   
   const animated = i => {
-    console.log(progress[i].value)
-    progress[i].value=withSpring(-progress[i].value,0.1,(isFinished)=> {
+    console.log("progress2Value :"+progress2.value)
+    setIndexOfAnimate(i)
+    progress2.value=withSpring(-progress2.value,0.1,(isFinished)=> {
       console.log("isFinished")
       
     })
 
   }
+  const listData = () => { return (
+    todoContext.task_name, todoContext.task_prior, 
+    todoContext.task_exp, todoContext.task_no, todoContext.performed )
+  }
+  const renderItem = ({item, index}) => {
+     return(
+      <View >
+      <TouchableOpacity onPress={() => deleteTask(todoContext.task_no[index], index)} 
+      style={{flex:1, marginLeft:255 ,marginTop:27 , position:'absolute'}}>
+        <Image source={require("../assets/bin3.png")} 
+          style={{width:44, height:37, zIndex:1}}/>
+      </TouchableOpacity>
+    <Animated.View  key={index} style={ (index) => reanimatedStyle(index)}>
+       <View style={{flexDirection:'row'}}>
+       <TouchableOpacity onPress={ () => { animated(index)} } style={{zIndex:3}} 
+    // onPress={() => details(todoContext.task_no[index])*/ 
+       >
+      <View style={todoContext.task_prior[index]==="High" ? styles.HighPriority : styles.itemContainer}> 
+          <View style={{flexDirection:'row' }}>
+              <Text style={styles.listtext} ellipsizeMode={'tail'} numberOfLines={1} >
+                {todoContext.task_name[index]} { todoContext.task_no[index]} 
+              </Text>
+              <Text style={styles.priorityText}>[ {todoContext.task_prior[index]} ]</Text>
+          </View>
+          <View style={{flexDirection:'row'}}>
+            <Text style={styles.exp}> 기한 -  {todoContext.task_exp[index]}</Text>
+            <View>
+            {todoContext.performed[index] == 0 ?  
+              <TouchableOpacity style={styles.notComplete} 
+              onPress={() => complete(todoContext.task_no[index],index)}>
+                <Text style={styles.perforemd}> 완 료</Text>  
+              </TouchableOpacity>
+            : 
+            <TouchableWithoutFeedback style={styles.complete}>
+                <Text style={styles.perforemd}> 완료됨</Text>  
+            </TouchableWithoutFeedback>
+            }
+            </View>    
+          </View>
+      </View>
+      
+    </TouchableOpacity>
+    </View>
+  </Animated.View>
+  </View>
+     )
+  }
+  const renderKey = (item, index) => todoContext.task_no[index];
   return (
     <View style={styles.container}>
         { noTask ===0 ? 
@@ -142,51 +204,9 @@ const TodoList_v2 = (props) => {
         </View>
         : 
         <FlatList 
-data={todoContext.task_name, todoContext.task_prior, todoContext.task_exp, todoContext.task_no, todoContext.performed }
-        renderItem={({ item, index }) => (  
-            <View >
-              <TouchableOpacity onPress={() => deleteTask(todoContext.task_no[index], index)} 
-              style={{flex:1, marginLeft:255 ,marginTop:27 , position:'absolute'}}>
-                <Image source={require("../assets/bin3.png")} 
-                  style={{width:44, height:37, zIndex:1}}/>
-              </TouchableOpacity>
-            <Animated.View   key={index.toString()} style={ reanimatedStyle} >
-               <View style={{flexDirection:'row'}}>
-               <TouchableOpacity onPress={ () => {animated(index)}} style={{zIndex:3}} 
-            // onPress={() => details(todoContext.task_no[index])*/ 
-               >
-              <View style={todoContext.task_prior[index]==="High" ? styles.HighPriority : styles.itemContainer}> 
-                  <View style={{flexDirection:'row' }}>
-                      <Text style={styles.listtext} ellipsizeMode={'tail'} numberOfLines={1} >
-                        {todoContext.task_name[index]} { todoContext.task_no[index]} 
-                      </Text>
-                      <Text style={styles.priorityText}>[ {todoContext.task_prior[index]} ]</Text>
-                      <View>
-                      
-                      </View>
-                  </View>
-                  <View style={{flexDirection:'row'}}>
-                    <Text style={styles.exp}> 기한 -  {todoContext.task_exp[index]}</Text>
-                    <View>
-                    {todoContext.performed[index] == 0 ?  
-                      <TouchableOpacity style={styles.notComplete} 
-                      onPress={() => complete(todoContext.task_no[index],index)}>
-                        <Text style={styles.perforemd}> 완 료</Text>  
-                      </TouchableOpacity>
-                    : 
-                    <TouchableWithoutFeedback style={styles.complete}>
-                        <Text style={styles.perforemd}> 완료됨</Text>  
-                    </TouchableWithoutFeedback>
-                    }
-                    </View>    
-                  </View>
-              </View>
-              
-            </TouchableOpacity>
-            </View>
-          </Animated.View>
-          </View>
-        )}
+        data={listData()}
+        renderItem={renderItem} 
+        keyExtractor={renderKey}
       />
     }
     <TaskDetailModal modalOn={taskDetailModal.modal} modalOff={ () => setTaskDetailModal(false, 1)}

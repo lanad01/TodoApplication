@@ -1,84 +1,57 @@
 import React, {useState, useEffect } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Image, Alert, StyleSheet, Text, TouchableOpacity} from 'react-native'
+import AsyncStorage from '@react-native-community/async-storage';
+
+import { styles } from './styles/tabsScreenStyle';
 import { Todo } from './todoscreen';
 import { TodoContext } from '../todoContext';
 import { ProfileStackScreen } from './profileRoot';
-import AsyncStorage from '@react-native-community/async-storage';
 import { AuthContext } from '../authcontext';
-import { TodoList_v3 } from './test';
-import SQLite  from 'react-native-sqlite-storage';
-import { TodoStackScreen } from './todoStack';
+import { TaskScreen } from './todoList_v3';
+import { DB } from '../globalVar';
+import { CREATE_TASK_TABLE } from '../globalVar';
 
 export const TabsScreen =  props  => {
-  const db = SQLite.openDatabase({name: 'testDB5', location: 'default', createFromLocation: 2,})
+  console.log("tabsScreen")
   const authContext=React.useContext(AuthContext);
   const todoContext =React.useContext(TodoContext)
-  const [render,reRender]=useState(0)
-  const Tabs = createBottomTabNavigator();
-  const [ getLengthForBadge, setLength ] = useState(0)
-  //useEffect로 설정
-  db.transaction(tx => { //검색되는 튜플 자체가 없다면 테이블 생성
-    tx.executeSql(
-      'SELECT task_no FROM task_info2',[],
-      (tx,res)=>{
-        var len=res.rows.length;
-        if(len===0){
-          db.transaction(tx => {
-            tx.executeSql(
-                'CREATE TABLE IF NOT EXISTS task_info2 ('
-                +'task_no INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,'
-                +'user_no INTEGER NOT NULL,'
-                +'task_name VARCHAR(50) NOT NULL,'
-                +'priority VARCHAR(30) DEFAULT "Middle",'
-                +'exp VARCHAR(100),'
-                +'performed boolean,'
-                +'FOREIGN KEY(user_no) REFERENCES user_info(user_no) ON DELETE CASCADE)',
-                [],
-                (tx , res) => {
-                    console.log("Tasktable created");
-                }, error => {
-                  console.log("Task table created fail "+error)
-                }
-            )
-        })
-        }
+  const [getLengthForBadge, setLength]=useState() //Task 갯수
+  const [render, reRender]=useState()
+  useEffect(() => {
+    CREATE_TASK_TABLE()
+    return () => {
     }
-    )
-  })
+  }, [])
   useEffect(() => { // context 재렌더링
-
-    setInterval(() => { //비동기 처리는 이렇게 하는거밖에 방법이 없는거야?
-      db.transaction(tx => { //badge 형성을 위해 해당 user_no의 남아있는 todoList length 출력
-        tx.executeSql(
-          'SELECT task_no FROM task_info2 WHERE user_no=?',
-          [authContext.user_no],
-          (tx,res)=>{
-            var len=res.rows.length;
-            setLength(len) //이걸 렌더링 해버리면 뒤쪽이 애매해지네
-          });  
-      })
-    }, 5000);
+    console.log("TabsScreen Badge Rerender")
+    DB.transaction(tx => { //badge 형성을 위해 해당 user_no의 남아있는 todoList length 출력
+      tx.executeSql(
+        'SELECT task_no FROM task_info2 WHERE user_no=?',
+        [authContext.user_no],
+        (tx,res)=>{
+          var len=res.rows.length;
+          setLength(len)
+          // setLength(len) //이걸 렌더링 해버리면 뒤쪽이 애매해지네
+        });  
+    })
     return () => {
       console.log("unmounted from tabsScreen")
     }
   }, [])
   
-    
-  
   function outFromTab () {
     Alert.alert(
-      '로그아웃하시겠습니까?',
-      '',
-      [
-        {
+      '로그아웃하시겠습니까?', '',
+      [ {
           text: '아니오',
           onPress: () => console.log('Cancel Pressed'),
           style: 'cancel',
         },
-        {text: '예', onPress: () => 
-        outFromTab2()
-      },
+        {
+          text: '예', onPress: () => 
+          outFromTab2()
+        },
       ],
       {cancelable: false},
     );
@@ -86,81 +59,57 @@ export const TabsScreen =  props  => {
   function outFromTab2(){ 
     AsyncStorage.removeItem("user_no");
     console.log("로그아웃 실행")
+    todoContext.task_exp=[];
+    todoContext.task_name=[];
+    todoContext.task_prior=[];
+    todoContext.task_no=[];
     props.navigation.navigate("Auth")
   }
-  const optOfTabNavi= () => {
+  const profileScreen_Opt= () => {
     return{
-      
+      tabBarActiveTintColor: "#00af9d" , 
+      tabBarLabelStyle : { fontFamily:"BMJUA", fontSize: 15, },
+      headerStyle: { backgroundColor:'#E0ffff' } ,
+      headerTitleStyle:{ fontFamily:'BMJUA', fontSize:28 }, 
+      headerRight: () => (
+        <TouchableOpacity style={styles.btnView} onPress={outFromTab}>
+         <Text style={styles.logoutBtn}>Logout</Text>
+        </TouchableOpacity>   ),
+        tabBarIcon: ({}) => {
+          return (
+            <Image source={require('../assets/profileIcon.png')} style={{width:40, height:30}}/>
+          );
+        } 
     }
   }
+  const todoScreen_Opt = () => {
+    return{
+      tabBarBadge :  getLengthForBadge , tabBarActiveTintColor: "#00af9d" , 
+      tabBarLabelStyle : { fontFamily:"BMJUA", fontSize: 15, },
+      headerTitleStyle:{ fontFamily:'BMJUA', fontSize:28 },
+      headerStyle: { backgroundColor:'#E0ffff', } ,
+      headerRight: () => (
+            <TouchableOpacity style={styles.btnView} onPress={outFromTab}>
+             <Text style={styles.logoutBtn}>Logout</Text>
+           </TouchableOpacity>         
+           ),
+        tabBarIcon:({}) => { 
+          return (
+            <Image source={require('../assets/128x128.png')} style={{width:30, height:30}}/>
+          );
+        } 
+    }
+  }
+  
+  const Tabs = createBottomTabNavigator();
   return (
     //컴포넌트화 
     <TodoContext.Provider value={todoContext}>
       <Tabs.Navigator initialRouteName="Task"  >
-        <Tabs.Screen name="Profile" component={ProfileStackScreen} 
-        options={{  tabBarActiveTintColor: "#00af9d" , 
-        tabBarLabelStyle : { fontFamily:"BMJUA", fontSize: 14, } ,headerStyle: { backgroundColor:'#E0ffff' } ,
-        headerTitleStyle:{ fontFamily:'BMJUA' }, 
-        headerRight: () => (
-          <TouchableOpacity style={styles.btnView} onPress={outFromTab}>
-           <Text style={styles.logoutBtn}>Logout</Text>
-          </TouchableOpacity>         ),
-          tabBarIcon: ({}) => {
-            return (
-              <Image source={require('../assets/profileIcon.png')} style={{width:40, height:30}}/>
-            );
-          } 
-        }}
-        />
-        <Tabs.Screen name="To do" component={Todo}
-        options={{  tabBarBadge :  getLengthForBadge ,tabBarActiveTintColor: "#00af9d" , 
-        headerTitleStyle:{ fontFamily:'BMJUA' }, headerStyle: { backgroundColor:'#E0ffff' } ,
-        headerRight: () => (
-              <TouchableOpacity style={styles.btnView} onPress={outFromTab}>
-               <Text style={styles.logoutBtn}>Logout</Text>
-             </TouchableOpacity>         
-             ),
-          tabBarIcon: ( {  } ) => { 
-            return (
-              <Image source={require('../assets/128x128.png')} style={{width:30, height:30}}/>
-            );
-          } 
-        }}
-        />
-        <Tabs.Screen name="Task" component={TodoList_v3}
-        options={{  tabBarBadge :  getLengthForBadge ,tabBarActiveTintColor: "#00af9d" , 
-        headerTitleStyle:{ fontFamily:'BMJUA' }, headerStyle: { backgroundColor:'#E0ffff' } ,
-        headerRight: () => (
-              <TouchableOpacity style={styles.btnView} onPress={outFromTab}>
-               <Text style={styles.logoutBtn}>Logout</Text>
-             </TouchableOpacity>         
-             ),
-          tabBarIcon: ( {  } ) => { 
-            return (
-              <Image source={require('../assets/128x128.png')} style={{width:30, height:30}}/>
-            );
-          } 
-        }}
-        />
+        <Tabs.Screen name="Profile" component={ProfileStackScreen} options={profileScreen_Opt}/>
+        <Tabs.Screen name="Task" component={TaskScreen} options={todoScreen_Opt}/>
       </Tabs.Navigator>
     </TodoContext.Provider>
   );
 }
-const styles=StyleSheet.create({
-  headerBtn:{
-    width:100,
-    height:60,
-    backgroundColor:'powderblue',
-  },
-  logoutBtn:{
-    fontFamily:'BMJUA',
-    fontSize:18,
-    color:'white',
-  },
-  btnView:{
-    backgroundColor:'#191970', width:80, height:30,
-    justifyContent:'center',
-    alignItems:'center',
-    right:10
-  },
-})
+

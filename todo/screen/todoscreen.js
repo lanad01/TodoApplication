@@ -1,22 +1,20 @@
 import React, { useState, useEffect,useContext } from 'react';
-import { View, Text, StyleSheet, Image, TextInput, TouchableOpacity, KeyboardAvoidingView} from 'react-native';
+import { View, Text, StyleSheet, Image, TextInput, TouchableOpacity, KeyboardAvoidingView, DeviceEventEmitter} from 'react-native';
 import GestureRecognizer, {  swipeDirections,} from 'react-native-swipe-gestures';
 import Modal from "react-native-modal";
 import { Picker } from '@react-native-picker/picker';
 import DatePicker from 'react-native-date-picker';
-import SQLite from 'react-native-sqlite-storage';
 import { AuthContext } from '../authcontext';
 import TodoList_v2 from './todoList_v2'
 import { Loading } from '../modal/Loading';
 import { TodoContext } from '../todoContext';
+import { DB } from '../globalVar';
 
 export const Todo = ( {navigation}) => {
   const authContext = React.useContext(AuthContext)
   const todoContext = React.useContext(TodoContext)
   const [render, reRender]=useState(1)
-  const [loading, setLoading] = useState(false)
-  const db = SQLite.openDatabase({name: 'testDB5', location: 'default', createFromLocation: 2,})
-  
+  const [loading, setLoading] = useState(false);
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       console.log("todoscreen unsubscribe")
@@ -30,10 +28,9 @@ export const Todo = ( {navigation}) => {
 
   const [modal, setModal] = useState(false); // 태스크 추가 모달
   const [open, setOpen] = useState(false); // 달력 모달 오픈
-
-  const [ taskName, setTaskName ] = React.useState(null);
-  const [ priority, setPriority ] = React.useState();
-  const [ exp, setExp ] = React.useState(new Date());
+  const [taskName, setTaskName] = useState(null);
+  const [priority, setPriority] = useState();
+  const [exp, setExp] = useState(new Date());
   var week = new Array('일', '월', '화', '수', '목', '금', '토');
   var year= exp.getFullYear();
   var month = exp.getMonth()+1;
@@ -42,16 +39,15 @@ export const Todo = ( {navigation}) => {
   var dateToKorean=year+'년 '+month+'월 '+day+'일 '+dayName+'요일 ';
   const register = () => { // Task 추가 등록
     if(taskName != null){ // name은 낫널
-      db.transaction(tx => {
+      DB.transaction(tx => {
         tx.executeSql(
             'INSERT INTO task_info2 (user_no, task_name, priority, exp, performed) VALUES (?,?,?,?,false)',
             [authContext.user_no,taskName, priority, dateToKorean ],
             (tx , res) => {
               console.log("Insert Success")
               setModal(!modal);
-              setLoading(true)
               reLoading()
-              setLoading(false);
+              DeviceEventEmitter.emit('updateBadgeCount', { })
             }, error => {
               console.log("Insert Failed"+error);
             }

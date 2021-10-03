@@ -1,20 +1,15 @@
 import React, { useState,useEffect } from 'react';
 import { SafeAreaView, View,  Text,  StyleSheet, TextInput, TouchableOpacity, Keyboard, KeyboardAvoidingView} from 'react-native';
-import Modal from "react-native-modal";
 import { AuthContext } from '../authcontext';
-import SQLite from 'react-native-sqlite-storage';
+import { Dimensions } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import { LoginErrorModal } from '../modal/loginErrorModal';
 import { IdPwdNotNullModal } from '../modal/IdPwdNotNullModal';
 import { ErrorModal } from '../modal/ErrorModal';
-import { Dimensions } from 'react-native';
+import { DB } from '../globalVar';
+
 
 export const authScreen = ({ navigation }) => {  
-  const db = SQLite.openDatabase({
-    name: 'testDB5',
-    location: 'default',
-    createFromLocation: 2,
-  })
   const chartHeight = Dimensions.get('window').height;
   const chartWidth = Dimensions.get('window').width;
   // console.log(chartHeight, chartWidth)
@@ -42,25 +37,25 @@ export const authScreen = ({ navigation }) => {
   const [loginNotNullModal, setLoginNotNullModal] = useState(false);
   const [pwdErrorModal, setPwdErrorModal]=useState(false);
 
-  const [id, setId] = React.useState();
-  const [pwd, setPwd] = React.useState();
+  const [id, setId] = useState();
+  const [pwd, setPwd] = useState();
  
   const login = () => {
     console.log("pwd : "+pwd+ " id : "+id)
     if(id === null || pwd=== null){ // id pwd 널값
       setLoginNotNullModal(true);
     }else{
-    db.transaction( (tx) => { //우선 id pwd 모든 박스를 가져온다
+    DB.transaction( (tx) => { //우선 id pwd 모든 박스를 가져온다
       tx.executeSql(
         'SELECT id FROM user_info WHERE id=? ', //select  반드시 count
         [id],
         (tx,res) => {
-          var len=res.rows.length;
+          let len=res.rows.length;
           if(len===0){
             console.log("검색된 아이디가 없음");
             setLoginErrorModal(true);
           }else if(len>0){
-            db.transaction( (tx) => {
+            DB.transaction( (tx) => {
               tx.executeSql(
                 'SELECT pwd FROM user_info WHERE id=?', // 
                 [id],
@@ -84,25 +79,24 @@ export const authScreen = ({ navigation }) => {
   }
   };
   const getUser_no = () => {
-    db.transaction ( tx => {
+    DB.transaction ( tx => {
       tx.executeSql(
         'SELECT * FROM user_info WHERE id=?', // select all 조심 , 컬럼명 명시 권장
         [id],
         (tx, res) => {// 
-          var selected=res.rows
-          var user_no=selected.item(0).user_no;
+          let selected=res.rows
+          let user_no=selected.item(0).user_no;
           AsyncStorage.setItem('user_no', JSON.stringify(user_no), () => { 
             // user_no 변수로 user_no값이 들어가 있는 user 저장
             authContext.userLogined=user_no;
           });
-          var user_no=selected.item(0).user_no;
-          var id=selected.item(0).id;
-          var pwd=selected.item(0).pwd;
-          var name=selected.item(0).name;
-          var email=selected.item(0).email;
-          var job=selected.item(0).job;
-          var regi_date=selected.item(0).regi_date;
-          var image=selected.item(0).image;
+          let id=selected.item(0).id;
+          let pwd=selected.item(0).pwd;
+          let name=selected.item(0).name;
+          let email=selected.item(0).email;
+          let job=selected.item(0).job;
+          let regi_date=selected.item(0).regi_date;
+          let image=selected.item(0).image;
           // context 값 선언 방법 변경 권장 export 
           authContext.id=id;
           authContext.pwd=pwd;

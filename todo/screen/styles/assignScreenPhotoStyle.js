@@ -1,0 +1,95 @@
+import { StyleSheet } from "react-native";
+export const styles = StyleSheet.create({
+    container: {
+      flex:1,
+      backgroundColor: '#191970',
+    },
+    scrollContainer:{
+      backgroundColor: "white",
+      flexGrow:1 //added flexGrow
+    },
+    headContainer: {
+      height:'40%',
+      backgroundColor: 'white',
+      alignItems: 'center',
+    },
+    headerText: {
+      fontFamily: 'BMJUA',
+      fontSize: 25,
+      color: '#191970',
+      marginTop: 30,
+      marginLeft: 20,
+    },
+    btmContainer: {
+      height:'50%',
+      backgroundColor: '#191970',
+      marginTop: 50,
+      alignItems: 'center',
+    },
+    nameInput: {
+      width: 280,
+      height: 50,
+      borderRadius: 10,
+      fontFamily: 'BMJUA',
+      fontSize: 23,
+      color: '#191970',
+      paddingLeft:10,
+      marginLeft: 4,
+      marginTop:50,
+    },
+    nameInfo: {
+      fontFamily: 'BMJUA',
+      color: 'white',
+      fontSize: 22,
+      marginRight: 38,
+      marginLeft:10,
+      marginTop: 12,
+    },
+    Info: {
+      fontFamily: 'BMJUA',
+      color: 'white',
+      fontSize: 12,
+      marginRight: 60,
+      marginTop: 10,
+      width: 200,
+    },
+    footer:{
+      width:250,
+      height:60,
+      backgroundColor:'white',
+      borderRadius:30,
+      alignItems:'center',
+      marginTop:30,
+  
+    },
+    btn:{
+      textAlign:'center',
+      width:230,
+      alignItems:'center',
+      fontFamily:"BMJUA",
+      fontSize:30,
+      color:'#191970',
+      marginTop:4,
+      paddingTop:10,
+      borderWidth:5,
+      borderColor:'#191970',
+      borderRadius:30,
+    },
+    choicebox:{
+      alignItems:'center',
+      marginTop:15,
+    },
+    photochoose:{
+      textAlign:"center",
+      fontFamily:"BMJUA",
+      fontSize:23,
+      backgroundColor:'white',
+      borderRadius:7,
+      width:250,
+      height:50,
+      borderColor:'white',
+      borderWidth:5,
+      paddingTop:10,
+    },
+  });
+  

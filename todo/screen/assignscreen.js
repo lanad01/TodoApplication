@@ -2,6 +2,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, SafeAreaView ,Image, StyleSheet, Text, 
   TouchableWithoutFeedback, TextInput, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
+import { DB } from '../globalVar';
+import { styles } from './styles/assignScreenStyle';
+import { ErrorModal } from '../modal/ErrorModal'; 
 
 export default assignScreen = ( { navigation }) => {
   const idRef = useRef(); // useRefsms Dom을 부른다
@@ -11,6 +14,7 @@ export default assignScreen = ( { navigation }) => {
   const [ id, setId ] = useState(null); 
   const [ idNull, setIdNull ] = useState(false);
   const [ idNNMessage, setIdNNMessage ] = useState();
+  const [ dupIdError, setDupIdError ] = useState(false);
 
   const [ pwd, setpwd ] = useState(null);
   const [ pwdNull, setPwdNull ] = useState(false);
@@ -27,34 +31,57 @@ export default assignScreen = ( { navigation }) => {
       setRise(false)
     })
     return() => { // useEffect에서 요기 return뒤의 값은 해당 컴포넌트가 종료될 때 실행된다
-      // console.log("사라짐");
-    }
+      Keyboard.removeAllListeners('keyboardDidHide'); //resource Leak 에러메시지 해결
+     }
   })
-
+  const modalOff = () => {
+    setDupIdError(false)
+    idRef.current.focus();
+  }
   function nextPage(){
-    if(id === null && pwd!=null){
+    if(id === null && pwd!=null){ //id Null
       setIdNull(true);
       setIdNNMessage(" !! ID는 반드시 입력해주셔야 합니다.");
       idRef.current.focus();
-    }else if(pwd === null && id != null){
+    }else if(pwd === null && id != null){ // Pwd Null
       setPwdNull(true);
       setPwdNNMsg(" !! 암호는 반드시 입력해주셔야 합니다. ")
       pwdRef.current.focus();
-    }else if(id ===null && pwd===null){
+    }else if(id ===null && pwd===null){ // id Pwd null
       setPwdNull(true);
       setPwdNNMsg(" !! 암호는 반드시 입력해주셔야 합니다. ")
       setIdNull(true);
       setIdNNMessage(" !! ID는 반드시 입력해주셔야 합니다.")
       idRef.current.focus();
-    } else if(pwd != null && id != null){
+    } else if(pwd != null && id != null){ // Both Not null
       setIdNNMessage("")
       setPwdNNMsg("")
-      navigation.navigate("Assign2nd", {
-        id: id, 
-        pwd:pwd,
-        job:job,
-        email:email
+      DB.transaction(tx => { // Duplication Check
+        tx.executeSql(
+            'SELECT count(*) AS count from user_info WHERE id=?',
+            [id],
+            (tx , res) => {
+              let count=JSON.stringify(res.rows.item(0).count)
+              console.log(count)
+              if(count==1){
+                console.log("중복된 아이디 존재");
+                setDupIdError(true)
+              }else{ // 최종
+                console.log("중복아이디 없음")
+                navigation.navigate("Assign2nd", {
+                  id: id, 
+                  pwd:pwd,
+                  job:job,
+                  email:email
+                });
+              }
+
+            }, error => {
+              console.log("Valid Failed"+error);
+            }
+        );
       });
+      
     }
   }
   return (
@@ -80,7 +107,7 @@ export default assignScreen = ( { navigation }) => {
               <Text style={styles.nnMsg}> {idNNMessage}</Text>
             </View>
             <TextInput style={styles.input} maxLength={30} placeholder=" Please type ID :)"
-              onChangeText={id => setId(id)} ref={idRef} />
+              onChangeText={id => setId(id)} ref={idRef}  />
 
             <View style={{flexDirection:'row'}}>
               <Text style={styles.category}> Password </Text>
@@ -99,86 +126,9 @@ export default assignScreen = ( { navigation }) => {
           
             </View>
         </TouchableWithoutFeedback>
+        <ErrorModal modalOn={dupIdError} modalOff={modalOff} message={"중복된 아이디가 존재합니다."} />
     </SafeAreaView>
 </KeyboardAvoidingView>
   );
 };
 
-const styles = StyleSheet.create({
-    container: {
-      height:700,
-      backgroundColor: '#191970',
-    },
-    headerText: {
-      fontFamily: 'BMJUA',
-      fontSize: 33,
-      color: '#191970',
-      marginLeft:10,
-      marginBottom:20
-    },
-    headerDetailText:{
-      fontFamily: 'BMJUA',
-      fontSize: 18,
-      color: '#191970',
-      marginLeft:15,
-      marginBottom:20
-    },
-    category:{
-      fontFamily:"BMJUA",
-      color:"#191970",
-      fontSize:25,
-      left:10,
-    },
-    nnMsg:{
-      fontFamily:'BMJUA',
-      fontSize:13,
-      color:'red',
-      marginLeft:13,
-      marginTop:5
-    },
-    input:{
-      fontFamily:"BMJUA",
-      height: 50,
-      width:270,
-      backgroundColor:'white',
-      borderColor:'#191970',
-      borderWidth:5,
-      borderRadius:8,
-      borderBottomWidth: 1,
-      marginBottom: 20,
-      left:10,
-      paddingLeft:10,
-    },
-    pwdinput:{
-      height: 50,
-      width:270,
-      backgroundColor:'white',
-      borderColor:'#191970',
-      borderWidth:5,
-      borderRadius:8,
-      borderBottomWidth: 1,
-      marginBottom: 20,
-      left:10,
-      paddingLeft:10,
-    },
-    inner: {
-      padding: 24,
-      marginTop:30,
-      backgroundColor:'white',
-      width:'92%',
-      left:13,
-      borderRadius:20,
-    },
-    header: {
-      fontSize: 36,
-      marginBottom: 48
-    },
-    textInput: {
-      height: 40,
-      backgroundColor:'white'
-    },
-    btnContainer: {
-      backgroundColor: "white",
-      marginTop: 12
-    }
-})

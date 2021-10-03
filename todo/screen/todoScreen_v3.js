@@ -8,8 +8,8 @@ import { TaskDetailModal } from '../modal/TaskDetailModal';
 import {TouchableWithoutFeedback, } from 'react-native-gesture-handler';
 import  Animated, { useSharedValue, useAnimatedStyle,withTiming,withSpring, 
 } from 'react-native-reanimated';
+import { DB } from '../globalVar';
 
-const db = SQLite.openDatabase({name: 'testDB5', location: 'default', createFromLocation: 2,}) 
 const reanimatedStyle = []
 const TodoList_v2 = (props) => {
   
@@ -25,7 +25,7 @@ const TodoList_v2 = (props) => {
   useEffect(() => {
     console.log("getTaskDEtail")
     setNoTask(noTask+1)
-      db.transaction( tx => {
+      DB.transaction( tx => {
          tx.executeSql(
            'SELECT * FROM task_info2 WHERE user_no=?',
            [authContext.user_no],
@@ -55,7 +55,7 @@ const TodoList_v2 = (props) => {
   }, [props.render])
 
   const deleteTaskImple = (task_no, index) => {
-    db.transaction(tx => {
+    DB.transaction(tx => {
         tx.executeSql(
             'DELETE FROM task_info2 WHERE task_no=?',
             [task_no],
@@ -95,7 +95,7 @@ const TodoList_v2 = (props) => {
   }
   const complete = (task_no, index) => {
     console.log(task_no)
-   db.transaction(tx => {
+   DB.transaction(tx => {
       tx.executeSql(
           'UPDATE task_info2 SET performed=true WHERE task_no=?',
           [task_no],
