@@ -1,50 +1,49 @@
-import { StyleSheet } from "react-native"
-
+import { StyleSheet } from 'react-native';
+import { DPW, WIDTH } from '../../dp';
 
 export const styles = StyleSheet.create({
-  container: {
-    backgroundColor: '#191970',
+  keyBoardAvoid: {
+    backgroundColor: 'white',
     flex: 1,
-    
+  },
+  container: {
+    flex: 1,
   },
   topContainer: {
     alignItems: 'center',
     backgroundColor: 'white',
-    height: 200,
+    height: 450 * DPW,
   },
   bottomContainer: {
     alignItems: 'center',
     backgroundColor: 'white',
-    height: '64%',
+    height: 650 * DPW,
   },
   categories: {
-    alignSelf: 'flex-start',
-    marginLeft: 10,
-    marginTop: 20,
+    marginTop: 30 * DPW,
   },
   text: {
-    textAlign: 'left',
     fontFamily: 'BMJUA',
     color: 'gray',
-    fontSize: 13,
+    fontSize: 26 * DPW,
     opacity: 0.4,
   },
   input: {
-    width: 300,
-    marginTop: -9,
+    width: 600 * DPW,
     fontFamily: 'BMJUA',
     color: '#191970',
-    fontSize: 20,
+    fontSize: 40 * DPW,
+    paddingLeft: 10,
   },
   inputUnderLine: {
-    width: 300,
+    width: 600 * DPW,
     backgroundColor: 'gray',
-    height: 3,
+    height: 5 * DPW,
     opacity: 0.4,
     marginTop: -7,
   },
   pwdChange: {
-    marginTop: 40,
+    marginTop: 40 * DPW,
   },
   pwdChangeText: {
     fontFamily: 'BMJUA',
@@ -53,67 +52,64 @@ export const styles = StyleSheet.create({
   },
   editBox: {
     backgroundColor: '#191970',
-    margin: 30,
-    height: 40,
-    width: 100,
+    marginTop: 30 * DPW,
+    marginLeft: 30 * DPW,
+    height: 80 * DPW,
+    width: 200 * DPW,
     borderColor: '#191970',
     borderWidth: 3,
   },
   editText: {
     textAlign: 'center',
     fontFamily: 'BMJUA',
-    marginTop: 4,
-    marginRight: 3,
+    marginTop: 7 * DPW,
+    marginRight: 5 * DPW,
     color: 'white',
-    fontSize: 23,
+    fontSize: 44 * DPW,
   },
-  btn:{
-    textAlign:'center',
-    width:230,
-    alignItems:'center',
-    fontFamily:"BMJUA",
-    fontSize:30,
-    color:'#191970',
-    marginTop:4,
-    paddingTop:10,
-    borderWidth:5,
-    borderColor:'#191970',
-    borderRadius:30,
+  choicebox: {
+    alignItems: 'center',
+    marginTop: 30 * DPW,
   },
-  choicebox:{
-    alignItems:'center',
-    marginTop:15,
-  },
-  photochoose:{
-    textAlign:"center",
-    fontFamily:"BMJUA",
-    fontSize:23,
-    backgroundColor:'white',
-    borderRadius:7,
-    width:250,
-    height:50,
-    borderColor:'white',
-    borderWidth:5,
-    paddingTop:10,
-  },
-  profile:{
-    width: 190,  
-    height: 180,
-    marginTop: -60,  
-    borderRadius: 60,
+  photochoose: {
+    textAlign: 'center',
+    fontFamily: 'BMJUA',
+    fontSize: 48 * DPW,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    width: 490 * DPW,
+    height: 120 * DPW,
+    borderColor: '#191970',
     borderWidth: 5,
+    paddingTop: 25 * DPW,
+    elevation: 18,
+  },
+  profile: {
+    width: 380 * DPW,
+    height: 400 * DPW,
+    marginTop: -100 * DPW,
+    borderRadius: 100,
+    borderWidth: 8,
     borderColor: 'powderblue',
-    
   },
-  backBtnView:{
-    flexDirection:'row', 
-    justifyContent:'flex-start',
-    alignSelf:'flex-start'
+  backBtnView: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    alignSelf: 'flex-start',
   },
-  backImg:{
-    width:60, 
-    height:60, 
-    marginTop:10, 
-    marginLeft:15
+  backImg: {
+    width: 120 * DPW,
+    height: 120 * DPW,
+    marginTop: 10 * DPW,
+    marginLeft: 15 * DPW,
+  },
+  backSide: {
+    backgroundColor: '#191970',
+    height: 20 * DPW,
+    width: WIDTH,
+  },
+  cameraImg: {
+    marginTop: -70 * DPW,
+    marginLeft: 280 * DPW,
   },
 });

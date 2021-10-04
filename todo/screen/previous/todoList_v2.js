@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { SafeAreaView, FlatList, StyleSheet, Text, View, Image , Alert, TouchableOpacity, 
                          } from 'react-native';
-import { TodoContext } from '../todoContext';
-import { AuthContext } from '../authcontext';
+import { TodoContext } from '../../todoContext';
+import { AuthContext } from '../../authcontext';
 import SQLite from 'react-native-sqlite-storage';
-import { TaskDetailModal } from '../modal/TaskDetailModal';
+import { TaskDetailModal } from '../../modal/TaskDetailModal';
 import {TouchableWithoutFeedback, } from 'react-native-gesture-handler';
 import  Animated, { useSharedValue, useAnimatedStyle,withTiming,withSpring,  
 } from 'react-native-reanimated';
-import { DB  } from '../globalVar';
+import { DB  } from '../../globalVar';
 
 const progress = [];
 

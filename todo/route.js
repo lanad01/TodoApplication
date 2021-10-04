@@ -1,32 +1,57 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
+import { BackHandler, Alert } from "react-native";
 import { AuthContext } from "./authcontext";
 import { TabsScreen } from "./screen/tabsScreen"
 import { AssignStackScreen } from "./screen/assignroot";
-import moment from "moment";
-import AsyncStorage from "@react-native-community/async-storage";
 import { authScreen } from "./screen/authScreen";
-import { CREATE_USER_TABLE } from "./globalVar";
+import { CREATE_USER_TABLE } from "./sqliteConnection";
+
 
 export default () => {
+  useEffect(() => {
+    const backAction = () => {
+      Alert.alert("Hold on!", "앱을 종료하시겠습니까?", [
+        {
+          text: "취소",
+          onPress: () => null,
+        },
+        { text: "확인", onPress: () => BackHandler.exitApp() }
+      ]);
+      return true;
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      backAction
+    );
+
+    return () => 
+    backHandler.remove();
+  }, []);
   useEffect(() => { //Create Table 선언
     CREATE_USER_TABLE();
+    autoLogin()
   }, []
   );
-  const [user_no, setUserNo] = useState(null);
-  autoLogin = () => { 
+  autoLogin = async () => {
     try{
-      console.log("AutoLogin")
-      const loginedNo=AsyncStorage.getItem("user_no");
-      console.log(loginedNo)
-      setUserNo(loginedNo);
-    }catch(err){
-      console.log("AutoLogin"+err)
+      console.log("autoLogin From route")
+      const user_no = await AsyncStorage.getItem("user_no")
+      if(value!=null){
+        console.log("Async Value :"+user_no)
+        authContext.user_no=value;
+        getInfoWhenAutoLogin(user_no)
+        navigation.navigate("MainScreen")
+      }else{
+        console.log("ASync Null Login Required")
+      }
+    }catch(error){
+      console.log("AutoLogin Error"+error)
     }
   }
-  console.log("Async에 저장된 userNo : " +user_no)
- 
+
   const authContext=React.useContext(AuthContext);
   const opt = () => { return {
     animationEnabled: false, headerTitleStyle: { fontFamily:"BMJUA"}, 

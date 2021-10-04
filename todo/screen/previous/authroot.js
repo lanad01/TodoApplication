@@ -1,7 +1,6 @@
 import { createStackNavigator } from '@react-navigation/stack';
-import React, { useState } from 'react';
-import { StyleSheet, TouchableOpacity, Text } from 'react-native';
-import { authScreen } from "./authScreen";
+import React from 'react';
+import { authScreen } from "../authScreen";
 
 const authScreen_Opt = () =>  {
   return{

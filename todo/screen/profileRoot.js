@@ -1,12 +1,13 @@
 import { createStackNavigator } from '@react-navigation/stack';
-import React, { useState } from 'react';
-import { StyleSheet, TouchableOpacity, Button, Text } from 'react-native';
+import React, { useEffect } from 'react';
+import { StyleSheet, BackHandler } from 'react-native';
 import ProfileEdit from './profileEdit';
 import { Profile } from './profilescreen';
 import { ResetPwd } from './resetPwd';
 
 export const ProfileStackScreen = () => {
   const ProfileStack = createStackNavigator();
+  
   return (
     <ProfileStack.Navigator initialRouteName="ProfileMain">
       <ProfileStack.Screen
