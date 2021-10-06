@@ -9,9 +9,7 @@ import { IdPwdNotNullModal } from '../modal/IdPwdNotNullModal';
 import { ErrorModal } from '../modal/ErrorModal';
 import { DB } from '../sqliteConnection';
 import { styles } from './styles/authScreenStyle';
-import { DPW } from '../dp';
 export const authScreen = ({ navigation }) => {  
-  console.log("DPW"+DPW)
   const chartHeight = Dimensions.get('window').height;
   const chartWidth = Dimensions.get('window').width;
   useEffect(() => {
@@ -39,8 +37,8 @@ export const authScreen = ({ navigation }) => {
   const [loginNotNullModal, setLoginNotNullModal] = useState(false);
   const [pwdErrorModal, setPwdErrorModal]=useState(false);
 
-  const [id, setId] = useState();
-  const [pwd, setPwd] = useState();
+  const [id, setId] = useState("Aldne");
+  const [pwd, setPwd] = useState("121212");
   
   const getInfoWhenAutoLogin = (user_no) => {
     DB.transaction ( tx => {
@@ -146,7 +144,6 @@ export const authScreen = ({ navigation }) => {
           onChangeText={id => setId(id)}
           placeholder="아이디 입력해주세요."
           placeholderTextColor="#191970"
-          // defaultValue="Aldne"
           maxLength={22}
         />
         <TextInput
@@ -155,7 +152,6 @@ export const authScreen = ({ navigation }) => {
           secureTextEntry={true}
           placeholder="비밀번호를 입력해주세요"
           placeholderTextColor="#191970"
-          // defaultValue="121212"
           maxLength={22}
 
         />

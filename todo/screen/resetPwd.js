@@ -1,18 +1,9 @@
 import React, { useState, useContext, useEffect } from 'react';
-import {
-  Text,
-  View,
-  Image,
-  TextInput,
-  TouchableOpacity,
-  BackHandler,
-  Alert,
-  KeyboardAvoidingView,
+import {  Text, View, Image, TextInput, TouchableOpacity, KeyboardAvoidingView,
 } from 'react-native';
 
 import { AuthContext } from '../authcontext';
 import { ErrorModal } from '../modal/ErrorModal';
-import { BACK_ACTION } from '../backHandler';
 import { DB } from '../sqliteConnection';
 import { styles } from './styles/resetPwdStyle';
 
@@ -22,14 +13,7 @@ export const ResetPwd = ({ navigation }) => {
   const [newPwd, setNewPwd] = useState(); // 새로운 비밀번호
   const [pwdCheck, setPwdCheck] = useState(); // 새로운 비밀번호 더블체크
   const [confirmFailedModal, setModal] = useState(false); // 비밀번호 수정 오류 모달
-  const [errorMsg, setErrorMsg] = useState('오류');
-  useEffect(() => {
-    const backHandler = BackHandler.addEventListener(
-      'hardwareBackPress',
-      BACK_ACTION,
-    );
-    return () => backHandler.remove();
-  }, []);
+  const [errorMsg, setErrorMsg] = useState('오류'); //에러 모달 Msg전송 값 
   const confirm = () => {
     if (newPwd === pwdCheck && newPwd != authContext.pwd) {
       console.log('new pwd matched');

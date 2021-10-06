@@ -4,19 +4,32 @@ import { Image, Alert, Text, TouchableOpacity, BackHandler, Keyboard} from 'reac
 import AsyncStorage from '@react-native-community/async-storage';
 
 import { styles } from './styles/tabsScreenStyle';
+import { BACK_ACTION } from '../alertCase';
 import { TodoContext } from '../todoContext';
 import { ProfileStackScreen } from './profileRoot';
 import { AuthContext } from '../authcontext';
 import { TaskScreen } from './taskList';
 import { DB, CREATE_TASK_TABLE } from '../sqliteConnection';
+
 export const TabsScreen =  props  => {
   console.log("tabsScreen")
 
   const authContext=React.useContext(AuthContext);
   const todoContext=React.useContext(TodoContext)
   const [getLengthForBadge, setLength]=useState() //Task 갯수
-  
   const [taskListWritten,setTaskListWritten]=useState(false); //TaskList 확인 여부
+
+  useEffect(() => { // 뒤로가기버튼 처리
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      BACK_ACTION,
+    );
+    return () => {
+      console.log("unsubscribe")
+      backHandler.remove();
+    }
+  }, []);
+
   useEffect(() => {
     console.log('KeyboardHide unSubscribe');
     Keyboard.removeAllListeners('keyboardDidHide');
@@ -39,7 +52,7 @@ export const TabsScreen =  props  => {
     return unsubscribe
   }, [props.navigation])
   
-  function logOutConfirm () { //로그아웃 Alert
+  function logOutConfirm ({navigation}) { //로그아웃 Alert
     Alert.alert(
       '로그아웃하시겠습니까?', '',
       [ {
@@ -63,16 +76,16 @@ export const TabsScreen =  props  => {
   const profileScreen_Opt= () => {
     return{
       tabBarActiveTintColor: "#00af9d" , 
-      tabBarLabelStyle : { fontFamily:"BMJUA", fontSize: 15, },
+      tabBarLabelStyle :  styles.tabbarLabel ,
       headerStyle: { backgroundColor:'#E0ffff' } ,
-      headerTitleStyle:{ fontFamily:'BMJUA', fontSize:28 }, 
+      headerTitleStyle: styles.headerTitleStyle, 
       headerRight: () => (
         <TouchableOpacity style={styles.btnView} onPress={logOutConfirm}>
           <Text style={styles.logoutBtn}>Logout</Text>
         </TouchableOpacity>   ),
         tabBarIcon: ({}) => {
           return (
-            <Image source={require('../assets/profileIcon.png')} style={{width:40, height:30}}/>
+            <Image source={require('../assets/profileIcon.png')} style={styles.tabbarIcon}/>
           );
         } 
     }
@@ -84,8 +97,8 @@ export const TabsScreen =  props  => {
           ? 0  
           : getLengthForBadge , 
       tabBarActiveTintColor: "#00af9d" , 
-      tabBarLabelStyle : { fontFamily:"BMJUA", fontSize: 15, },
-      headerTitleStyle:{ fontFamily:'BMJUA', fontSize:28 },
+      tabBarLabelStyle : styles.tabbarLabel,
+      headerTitleStyle: styles.headerTitleStyle,
       headerStyle: { backgroundColor:'#E0ffff', } ,
       headerRight: () => (
             <TouchableOpacity style={styles.btnView} onPress={logOutConfirm}>
@@ -94,7 +107,7 @@ export const TabsScreen =  props  => {
            ),
         tabBarIcon:({}) => { 
           return (
-            <Image source={require('../assets/128x128.png')} style={{width:30, height:30}}/>
+            <Image source={require('../assets/128x128.png')} style={styles.tabbarIcon}/>
           );
         } 
     }

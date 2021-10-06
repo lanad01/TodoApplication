@@ -62,7 +62,7 @@ export default () => {
     <AuthContext.Provider value={authContext}>
       <NavigationContainer>
         <MainStack.Navigator initialRouteName="Auth" headerShown={false}>
-          <MainStack.Screen name="MainScreen" component={TabsScreen} options={opt}/> 
+          <MainStack.Screen name="MainScreen" component={TabsScreen} options={opt} /> 
           <MainStack.Screen name="Auth" component={authScreen} options={opt} />
           <MainStack.Screen name="Assign" component={AssignStackScreen} options={opt} />
         </MainStack.Navigator>

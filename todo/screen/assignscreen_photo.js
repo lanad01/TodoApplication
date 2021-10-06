@@ -35,28 +35,44 @@ export default assignscreen_photo = ({ route, navigation }) => {
   const cropPicker_Opt = () => {
     return { cropping: true, includeBase64: true };
   };
-  function pickOnePhoto() {
+  function pickOnePhoto() { // 갤러리에서 사진선택
     ImagePicker.openPicker({ cropPicker_Opt }).then(image => {
-      setPicture(true);
+      setPicture(true); // 사진선택 True
       console.log('pictureSelectd : ' + pictureSelected);
-      setProfileImage(image.path);
-      setModal(!modalShow);
+      setProfileImage(image.path); // Profile이미지를 갤러리에서 선택한 사진으로 변경 
+      setModal(!modalShow); //카메라 모달 종료
+    })
+    .catch(e => { //Null Handle
+      if (e.code !== 'E_PICKER_CANCELLED') {
+        console.log(e);
+        Alert.alert(
+          'Sorry, there was an issue attempting to get the image/video you selected. Please try again',
+        );
+      }
     });
   }
-  function callCamera() {
+  function callCamera() { // 사진 직접 찍기 선택
     ImagePicker.openCamera({ cropPicker_Opt }).then(image => {
-      setPicture(true);
-      setProfileImage(image.path);
-      setModal(!modalShow);
+      setPicture(true); // 사진선택 True
+      setProfileImage(image.path); // 찍은 camera image path를 프로필 이미지로 변경
+      setModal(!modalShow); // 카메라 모달 종료
+    })
+    .catch(e => { //Null Handle
+      if (e.code !== 'E_PICKER_CANCELLED') {
+        console.log(e);
+        Alert.alert(
+          'Sorry, there was an issue attempting to get the image/video you selected. Please try again',
+        );
+      }
     });
   }
-  const finalize = () => {
-    if (name === null) {
-      nameRef.current.focus();
-      setNameIsNN(true);
+  const finalize = () => { // 최종 Insert 
+    if (name === null) { // 이름이 Null값
+      nameRef.current.focus(); // NameInput란에 커서 처리
+      setNameIsNN(true); // 이름 null error Modal On
     } else {
       DB.transaction(tx => {
-        const current_time = moment().format('llll');
+        const current_time = moment().format('llll'); //현재 시간을 'llll'로 포맷하여 Stringify
         console.log(current_time);
         tx.executeSql(
           'INSERT INTO user_info (id, pwd, job, name, email, image, regi_date) VALUES (?,?,?,?,?,?,?)',
@@ -68,8 +84,7 @@ export default assignscreen_photo = ({ route, navigation }) => {
             console.log('job : ' + job);
             console.log('image : ' + profileImage);
             console.log('regi_date : ' + current_time);
-
-            select();
+            select(); //Insert된 값을 authContext에 저장
           },
           error => {
             console.log('Insert Failed' + error);
@@ -78,7 +93,7 @@ export default assignscreen_photo = ({ route, navigation }) => {
       });
     }
   };
-  const select = () => {
+  const select = () => { //Insert된 값을 authContext에 저장
     DB.transaction(tx => {
       tx.executeSql(
         'SELECT id, pwd, job, name, email, image, regi_date, job, user_no FROM user_info WHERE id=?',

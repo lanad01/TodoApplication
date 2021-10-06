@@ -1,16 +1,17 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
-import { Animated, Dimensions, Text, TouchableHighlight, View, PanResponder, TouchableOpacity, Image,
+import { Animated, Dimensions, Text, View, PanResponder, TouchableOpacity, Image,
   BackHandler, 
 } from 'react-native';
 import { SwipeListView } from 'react-native-swipe-list-view';
 import { Card } from 'react-native-shadow-cards';
 import ActionButton from 'react-native-action-button';
 
+import { GuideModal } from '../modal/GuideModal';
+import { TaskDetailModal } from '../modal/TaskDetailModal';
 import { Loading } from '../modal/Loading';
 import { TodoContext } from '../todoContext';
 import { AuthContext } from '../authcontext';
 import { AddModal } from '../modal/AddModal';
-import { BACK_ACTION } from '../backHandler';
 import { DB  } from '../sqliteConnection';
 import { DPW } from '../dp'
 import { styles } from './styles/taskListStyle';
@@ -18,21 +19,14 @@ import { styles } from './styles/taskListStyle';
 const rowTranslateAnimatedValues = {};
 
 export const TaskScreen = ({ navigation }) => {
-  console.log(DPW);
   const todoContext = useContext(TodoContext);
   const authContext = useContext(AuthContext);
   const [render, reRender] = useState(1); // 강제 렌더링
 
   const [loading, setLoading] = useState(false); // Loading 모달
   const [addModal, setAddModal] = useState(false); //Task추가 모달
-
-  useEffect(() => { // 뒤로가기버튼 처리
-    const backHandler = BackHandler.addEventListener(
-      'hardwareBackPress',
-      BACK_ACTION,
-    );
-    return () => backHandler.remove();
-  }, []);
+  const [detailModal, setDetailModal] = useState(false)
+  const [detailTask_no,setDetailTask_no] = useState();
 
   useEffect( () => {
     //Task List Select
@@ -69,10 +63,14 @@ export const TaskScreen = ({ navigation }) => {
     } 
     setLoading(true)
     getTaskList() //async await 활용
-      .then(setLoading(false))
+    .then(setLoading(false))
     return () => {};
   }, [render]);
-
+  const getTaskDetail = index => {
+    console.log("indx" + index)
+    setDetailTask_no(index)
+    setDetailModal(true);
+  }
   const deleteTask = (i, task_no) => {
     console.log('Index : ' + i);
     console.log('task_no ' +task_no); // arg working
@@ -142,7 +140,7 @@ export const TaskScreen = ({ navigation }) => {
   const renderHiddenItem = () => ( // LeftSwipe시 생성되는 뒤쪽 View
     <View style={styles.rowBack}>
       <View style={[styles.backRightBtn, styles.backRightBtnRight]}>
-        <Text style={styles.backTextWhite}>Delete</Text>
+        <Text style={styles.backTextWhite}>  ＜＜＜Delete</Text>
       </View>
     </View>
   );
@@ -185,7 +183,7 @@ export const TaskScreen = ({ navigation }) => {
     <View style={styles.container}>
       <View style={styles.underLine}/>
       { todoContext.task_no.length < 1 
-      ?  //Task가 없는 경우
+      ?  //Task가 없는 경우 : Add to task 그림을 출력
       <TouchableOpacity onPress={()=> setAddModal(true)}>
         <View style={{alignItems:'center', justifyContent: 'center',}}>
           <Text style={styles.noTaskText}>
@@ -195,7 +193,7 @@ export const TaskScreen = ({ navigation }) => {
             style={styles.noTaskImg}/>
         </View>
       </TouchableOpacity>
-      :
+      : //Task가 존재한 경우 : List 출력
       <SwipeListView
         ItemSeparatorComponent={flatListSeparator} // listSeparator
         disableRightSwipe //오른쪽 스와이프 불가
@@ -207,7 +205,7 @@ export const TaskScreen = ({ navigation }) => {
         renderItem={({ data, index }) => (
           <Card style={styles.card}>
             <TouchableOpacity
-                onPress={() => console.log('You touched me')}
+                onPress={() => getTaskDetail(todoContext.task_no[index])}
                 style={styles.rowFront}
                 underlayColor={'#AAA'}>
             <Animated.View
@@ -243,15 +241,15 @@ export const TaskScreen = ({ navigation }) => {
       <Animated.View
         style={{
           transform: [{ translateX: pan.x }, { translateY: pan.y }],
-          top:500,
-          right:15,
+          top:1000 * DPW,
+          right:25 * DPW,
           alignSelf: 'flex-end',
           position:'absolute',
         }}
         {...panResponder.panHandlers}>
         <TouchableOpacity onPress={() => setAddModal(true)}>
-          <View style={{ width: 50,height: 50,marginBottom: 50}}>
-            <View style={{ bottom: 30, left: 33,}}>
+          <View style={styles.addBtnContainer}>
+            <View style={styles.actionBtnContainer}>
               <ActionButton buttonColor="rgba(231,76,60,1)" />
             </View>
           </View>
@@ -266,6 +264,12 @@ export const TaskScreen = ({ navigation }) => {
         render={() => reRender(render + 1)}
       />
       <Loading modalOn={loading} />
+      {/* <GuideModal/> */}
+      <TaskDetailModal 
+        modalOn={detailModal} 
+        modalOff={()=> setDetailModal(false)} 
+        task_no={detailTask_no}
+        render={() => reRender(render+1)} />
     </View>
   );
 };

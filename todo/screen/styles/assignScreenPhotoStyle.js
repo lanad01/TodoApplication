@@ -19,15 +19,11 @@ export const styles = StyleSheet.create({
   },
   profileImage: {
     width: 500 *DPW,
-    height: 440 *DPW,
-    marginTop: 40 *DPW,
+    height: 480 *DPW,
+    marginTop: 20 *DPW,
     borderRadius: 100 *DPW,
   },
   btmContainer: {
-    height: 700 *DPW,
-    backgroundColor: '#191970',
-    marginTop: 90 *DPW,
-    alignItems: 'center',
   },
   nameInput: {
     width: 560 *DPW,

@@ -1,73 +1,32 @@
-import Svg, {
-  Circle,
-  Ellipse,
-  G,
-  Text,
-  TSpan,
-  TextPath,
-  Path,
-  Polygon,
-  Polyline,
-  Line,
-  SvgUri,
-  Rect,
-  Use,
-  Image,
-  Symbol,
-  Defs,
-  LinearGradient,
-  RadialGradient,
-  Stop,
-  ClipPath,
-  Pattern,
-  Mask,
-} from 'react-native-svg';
+import React, { useState } from 'react';
+import DropDownPicker from 'react-native-dropdown-picker';
+export default function App() {
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState(null);
+  const [items, setItems] = useState([
+    { label: 'Apple', value: 'apple' },
+    { label: 'Banana', value: 'banana' },
+    { label: 'Banana31', value: 'banan2a' },
+    { label: 'Banan3a', value: 'banan23a' },
+  ]);
 
-/* Use this if you are using Expo
-import * as Svg from 'react-native-svg';
-const { Circle, Rect } = Svg;
-*/
-
-import React from 'react';
-import { View, StyleSheet } from 'react-native';
-
-export default class SvgExample extends React.Component {
-  render() {
-    return (
-      <View
-        style={[
-          StyleSheet.absoluteFill,
-          { alignItems: 'center', justifyContent: 'center' },
-        ]}
-      >
-        <Svg height="50%" width="50%" viewBox="0 0 100 100">
-          <Circle
-            cx="50"
-            cy="50"
-            r="45"
-            stroke="blue"
-            strokeWidth="2.5"
-            fill="green"
-          />
-          <Rect
-            x="15"
-            y="15"
-            width="70"
-            height="70"
-            stroke="red"
-            strokeWidth="2"
-            fill="yellow"
-          />
-        </Svg>
-        <SvgUri
-    width="100%"
-    height="100%"
-    uri="http://thenewcode.com/assets/images/thumbnails/homer-simpson.svg"
-  />
-  <SvgUri width="25" height="25" source={require('../icons/ic_user.svg')} {...props}> </SvgUri>
-
-  
-      </View>
-    );
-  }
+  return (
+    <DropDownPicker
+    containerStyle={{
+      width:150
+    }}
+    labelStyle={{
+      fontFamily:"BMJUA"
+    }}
+    style={{width:100, height:50 }}
+      closeAfterSelecting={true}
+      open={open}
+      value={value}
+      onChangeValue={()=> console.log("Cons")}
+      items={items}
+      setOpen={setOpen}
+      setValue={setValue}
+      setItems={setItems}
+    />
+  );
 }

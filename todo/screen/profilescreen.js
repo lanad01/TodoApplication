@@ -8,11 +8,11 @@ export const Profile = ({ navigation }) => {
   const authContext = React.useContext(AuthContext);
   
 
-  const config = { velocityThreshold: 0.5, directionalOffsetThreshold: 50 };
+  const config = { velocityThreshold: 0.5, directionalOffsetThreshold: 50 }; //swipe gesture Handler Option 
   function onSwipe(gestureName) {
     // const { SWIPE_UP, SWIPE_DOWN, SWIPE_LEFT, SWIPE_RIGHT } = swipeDirections;
     console.log("GestureName :"+gestureName)
-    if(gestureName==="SWIPE_LEFT") navigation.navigate("Task")
+    if(gestureName==="SWIPE_LEFT") navigation.navigate("Task") //Swipe Left할 시 Screen.Task로 이동
   }
   return ( 
     <GestureRecognizer
