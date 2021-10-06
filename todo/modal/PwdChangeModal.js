@@ -17,6 +17,7 @@ export const PwdChangeModal = props => {
   const verify = () => {
     if (pwdInput === props.pwdVerify) {
       console.log('일치');
+      props.modalOff();
       props.resetPwd();
     } else {
       console.log('PWD Verify 불일치');

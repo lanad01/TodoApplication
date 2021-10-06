@@ -6,8 +6,6 @@ import { styles } from './styles/profileScreenStyle';
 import { HEIGHT } from '../dp';
 export const Profile = ({ navigation }) => {
   const authContext = React.useContext(AuthContext);
-  
-
   const config = { velocityThreshold: 0.5, directionalOffsetThreshold: 50 }; //swipe gesture Handler Option 
   function onSwipe(gestureName) {
     // const { SWIPE_UP, SWIPE_DOWN, SWIPE_LEFT, SWIPE_RIGHT } = swipeDirections;
@@ -29,7 +27,7 @@ export const Profile = ({ navigation }) => {
               style={styles.profileImage}/>
             <Text style={styles.nameText}> {authContext.name} </Text>
             <Text style={styles.emailText}> {authContext.email === null ? authContext.emailNull : authContext.email } </Text>
-            <TouchableOpacity onPress={ () => navigation.replace("ProfileEdit") } style={styles.editBox}>
+            <TouchableOpacity onPress={ () => navigation.push("ProfileEdit") } style={styles.editBox}>
               <Text style={styles.editText }>  프로필 수정 </Text>
             </TouchableOpacity>
           </View>

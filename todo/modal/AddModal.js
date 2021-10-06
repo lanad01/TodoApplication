@@ -11,18 +11,18 @@ import { styles } from '../screen/styles/addModalStyle';
 
 export const AddModal = props => {
   const authContext = React.useContext(AuthContext);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false); // 로딩화면
 
   const [open, setOpen] = useState(false); // 달력 모달 오픈
-  const [taskName, setTaskName] = React.useState(null);
-  const [priority, setPriority] = React.useState();
-  const [exp, setExp] = React.useState(new Date());
+  const [taskName, setTaskName] = React.useState(null); // Task이름
+  const [priority, setPriority] = React.useState(); // 우선순위
+  const [exp, setExp] = React.useState(new Date()); // 기한
   let week = new Array('일', '월', '화', '수', '목', '금', '토');
   let year = exp.getFullYear();
   let month = exp.getMonth() + 1;
   let day = exp.getDate();
   let dayName = week[exp.getDay()];
-  let dateToKorean =
+  let dateToKorean = // exp(Date Type) to String
     year + '년 ' + month + '월 ' + day + '일 ' + dayName + '요일 ';
   const register = () => {
     // Task 추가 등록

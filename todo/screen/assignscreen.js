@@ -35,7 +35,7 @@ export default assignScreen = ({ navigation }) => {
 
   const [rise,setRise] = useState(0)
   useEffect(() => {
-    Keyboard.addListener('keyboardDidHide', e => {
+    const hide = Keyboard.addListener('keyboardDidHide', e => {
       // 키보드가 사라지면 화면을 직접 내려버린다.
       setRise(0)
     });
@@ -44,7 +44,8 @@ export default assignScreen = ({ navigation }) => {
         
       console.log('Unsubscribe ');
         // useEffect에서 요기 return뒤의 값은 해당 컴포넌트가 종료될 때 실행된다
-        Keyboard.removeAllListeners('keyboardDidHide'); //resource Leak 에러메시지 해결
+        // Keyboard.removeAllListeners('keyboardDidHide'); //resource Leak 에러메시지 해결
+        hide.remove();
       },
       []
     );

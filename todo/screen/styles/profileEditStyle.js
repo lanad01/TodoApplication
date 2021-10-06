@@ -87,10 +87,11 @@ export const styles = StyleSheet.create({
   profile: {
     width: 380 * DPW,
     height: 400 * DPW,
-    marginTop: -100 * DPW,
+    marginTop: 40 * DPW,
     borderRadius: 100,
     borderWidth: 8,
     borderColor: 'powderblue',
+    
   },
   backBtnView: {
     flexDirection: 'row',

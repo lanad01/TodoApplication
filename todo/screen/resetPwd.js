@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from 'react';
-import {  Text, View, Image, TextInput, TouchableOpacity, KeyboardAvoidingView,
+import {  Text, View, Image, TextInput, TouchableOpacity, KeyboardAvoidingView, BackHandler
 } from 'react-native';
-
+import { BACK_ACTION } from '../alertCase';
 import { AuthContext } from '../authcontext';
 import { ErrorModal } from '../modal/ErrorModal';
 import { DB } from '../sqliteConnection';
@@ -14,6 +14,8 @@ export const ResetPwd = ({ navigation }) => {
   const [pwdCheck, setPwdCheck] = useState(); // 새로운 비밀번호 더블체크
   const [confirmFailedModal, setModal] = useState(false); // 비밀번호 수정 오류 모달
   const [errorMsg, setErrorMsg] = useState('오류'); //에러 모달 Msg전송 값 
+
+
   const confirm = () => {
     if (newPwd === pwdCheck && newPwd != authContext.pwd) {
       console.log('new pwd matched');
@@ -48,7 +50,7 @@ export const ResetPwd = ({ navigation }) => {
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity
-          onPress={() => navigation.replace('ProfileEdit')}
+          onPress={() => navigation.goBack('ProfileEdit')}
           style={styles.backBtnContainer}>
           <Image
             source={require('../assets/back.png')}

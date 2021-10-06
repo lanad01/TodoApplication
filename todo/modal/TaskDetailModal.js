@@ -16,10 +16,9 @@ import moment from 'moment';
 
 export const TaskDetailModal = props => {
   const todoContext = useContext(TodoContext);
-  const [taskName, setTaskName] = useState('');
-  const [taskPrior, setPrior] = useState('');
-  // const [newExp, setNewExp] = useState('');
-  const [exp, setExp] = useState(new Date());
+  const [taskName, setTaskName] = useState(''); // 수정 modal창에서 작성된 task이름 
+  const [taskPrior, setPrior] = useState(''); // 수정 modal차엥서 작성된 우선순위
+  const [exp, setExp] = useState(new Date()); // 수정 modal창에서 작성된 기한
   const [open, setOpen] = useState(false); // 달력 모달 오픈
   let week = new Array('일', '월', '화', '수', '목', '금', '토');
   let year = exp.getFullYear();
@@ -27,8 +26,8 @@ export const TaskDetailModal = props => {
   let day = exp.getDate();
   let dayName = week[exp.getDay()];
   let dateToKorean = year + '년 ' + month + '월 ' + day + '일 ' + dayName + '요일 ';
-  let newExp = moment(exp).format('llll')
-  useEffect(() => {
+  let newExp = moment(exp).format('llll') // 기한(Date Type) to String
+  useEffect(() => { // TaskDetailModal Mount시 실행되는 task_no를 통한 데이터 조회
     console.log('useEffect on?');
     DB.transaction(tx => {
       tx.executeSql(
@@ -44,20 +43,20 @@ export const TaskDetailModal = props => {
       );
     });
     return () => {};
-  }, [props.modalOn]);
-  const updateTask = () => {
+  }, [props.modalOn]); // 상위 컴포넌트에서 해당 모달을 호출할 시 단 한번 시행
+  const updateTask = () => { // Update Task Detail
     console.log("new Task NAme :"+taskName)
     console.log("new Task prior :"+taskPrior)
     console.log("new Task exp :"+exp)
     console.log("newExp to String :"+newExp)
     DB.transaction(tx => {
-      tx.executeSql(
+      tx.executeSql( //상위 컴포넌트에서 호출시킨 task_no의 데이터를 Update
         'UPDATE task_info2 SET task_name=?, priority=?, exp=? WHERE task_no=?',
         [taskName,taskPrior,newExp,props.task_no],
         (tx,res)=>{
           console.log("Update Task Success")
-          props.modalOff()
-          props.render()
+          props.modalOff() //Detail 모달 종료
+          props.render() // 상위컴포넌트 리렌더링
         },
         error => {
           console.log('Update Task Failed' + error)

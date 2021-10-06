@@ -23,6 +23,11 @@ const ProfileEdit = ({ navigation }) => {
   const [modalShow, setModal] = useState(false);
   const [pwdChangeModal, setPwdChangeModal] = useState(false);
   
+  if(authContext.image==null){
+    console.log("auth image Null")
+    authContext.image='https://icon-library.com/images/profile-icon/profile-icon-7.jpg'
+  }
+  
   const cropPicker_Opt = () => {
     return { cropping: true, includeBase64: true };
   }; //Img crop picker Option
@@ -92,7 +97,8 @@ const ProfileEdit = ({ navigation }) => {
           authContext.name = newName;
           authContext.email = newEmail;
           authContext.job = newJob;
-          navigation.navigate('ProfileMain');
+          navigation.replace( 'ProfileMain' ) 
+          //******replace로 해야 'ProfileMain'에서 렌더링이 실행******
         },
         error => {
           console.log('Update Failed' + error);
@@ -107,12 +113,12 @@ const ProfileEdit = ({ navigation }) => {
       <View style={styles.backSide} />
       <View style={styles.topContainer}>
         <View style={styles.backBtnView}>
-          <TouchableOpacity onPress={() => navigation.replace('ProfileMain')}>
+          {/* <TouchableOpacity onPress={() => navigation.goBack('ProfileMain')}>
             <Image
               source={require('../assets/back.png')}
               style={styles.backImg}
             />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
 
         <Image
@@ -213,7 +219,7 @@ const ProfileEdit = ({ navigation }) => {
           modalOn={pwdChangeModal}
           modalOff={() => setPwdChangeModal(false)}
           pwdVerify={authContext.pwd}
-          resetPwd={() => navigation.navigate('resetPwd')}
+          resetPwd={() => navigation.push("resetPwd")}
       />
     </KeyboardAvoidingView>
   );

@@ -3,15 +3,9 @@ import Modal from 'react-native-modal';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Card } from 'react-native-shadow-cards';
 import { styles } from '../screen/styles/taskListStyle';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  withTiming,
-} from 'react-native-reanimated';
+import Animated, {  useAnimatedStyle,  useSharedValue,  withTiming,withRepeat } from 'react-native-reanimated';
 
-export const GuideModal = () => {
-  const [showModal, setShowModal] = useState(true);
+export const GuideModal = props => {
   const offset = useSharedValue(0);
   const reanimatedStyle = useAnimatedStyle(() => {
     return {
@@ -19,30 +13,16 @@ export const GuideModal = () => {
     };
   });
   useEffect(() => {
-    setInterval(() => {
-        offset.value = withTiming(-250, { duration: 1500 }, isFinished => {
-          offset.value = withTiming(0, {
-            duration: 1500,
-          });
-        });
-      }, 4000);
-    setImmediate(() => {
-        offset.value = withTiming(-250, { duration: 1500 }, isFinished => {
-          offset.value = withTiming(0, {
-            duration: 1500,
-          });
-        });
-      });
-      return () => {
-      }
+    console.log("GuideModal Animation working on now")
+    offset.value = withRepeat(withTiming(-250, { duration: 1500 }),-1,true);
   }, [])
   
 
   const exitModal = () => {
-    setShowModal(false);
+    props.modalOff()
   };
   return (
-    <Modal isVisible={showModal} avoidKeyboard={true} transparent={true}>
+    <Modal isVisible={props.modalOn} avoidKeyboard={true} transparent={true}>
       <View>
         <View
           style={styles.guideHeaderCont}>

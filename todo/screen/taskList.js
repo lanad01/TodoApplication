@@ -25,12 +25,18 @@ export const TaskScreen = ({ navigation }) => {
 
   const [loading, setLoading] = useState(false); // Loading 모달
   const [addModal, setAddModal] = useState(false); //Task추가 모달
-  const [detailModal, setDetailModal] = useState(false)
-  const [detailTask_no,setDetailTask_no] = useState();
-
+  const [detailModal, setDetailModal] = useState(false) //Detail Task 확인 모달
+  const [detailTask_no,setDetailTask_no] = useState(); //Detail Task에 보낼 특정 Task_no
+  const [showGuideModal, setShowGuideModal] = useState(false);
+  useEffect(() => {
+    setShowGuideModal(true);
+    return () => {
+      
+    }
+  }, [])
   useEffect( () => {
     //Task List Select
-    getTaskList = async function(){
+    getTaskList = async function(){ // taskList를 받아오는 함수를 async처리
       await DB.transaction(tx => {
         console.log("taskList ListSelect mounted")
         tx.executeSql(
@@ -46,6 +52,7 @@ export const TaskScreen = ({ navigation }) => {
                 if (priority === null) {
                   priority = 'Middle';
                 }
+                //context에 조회된 데이터 row수만큼 배열 생성
                 todoContext.task_no[i] = res.rows.item(i).task_no;
                 todoContext.task_name[i] = res.rows.item(i).task_name;
                 todoContext.task_prior[i] = priority;
@@ -66,18 +73,17 @@ export const TaskScreen = ({ navigation }) => {
     .then(setLoading(false))
     return () => {};
   }, [render]);
-  const getTaskDetail = index => {
+
+  const getTaskDetail = index => { // index = 클릭 된 task의 task_no
     console.log("indx" + index)
-    setDetailTask_no(index)
+    setDetailTask_no(index) // 해당 task_no(Primary Key)의 디테일을 출력하는 모달
     setDetailModal(true);
   }
-  const deleteTask = (i, task_no) => {
-    console.log('Index : ' + i);
-    console.log('task_no ' +task_no); // arg working
+  const deleteTask = (i, task_no) => { // i = 배열의 index, 클릭된 배열이 실제 가지고 있는 task_no(PK)
     DB.transaction(tx => {
       DB.executeSql(
-        'DELETE FROM task_info2 WHERE task_no=?',
-        [task_no],
+        'DELETE FROM task_info2 WHERE task_no=?', //수령한 task_no에 해당하는 row 삭제
+        [task_no], 
         (tx, res) => {
           console.log('Delete Success');
           // 배열 정보에서 삭제
@@ -264,7 +270,7 @@ export const TaskScreen = ({ navigation }) => {
         render={() => reRender(render + 1)}
       />
       <Loading modalOn={loading} />
-      {/* <GuideModal/> */}
+      <GuideModal modalOn={showGuideModal} modalOff={ () => setShowGuideModal(false)}   />
       <TaskDetailModal 
         modalOn={detailModal} 
         modalOff={()=> setDetailModal(false)} 

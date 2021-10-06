@@ -19,16 +19,16 @@ export default () => {
         },
         { text: "확인", onPress: () => BackHandler.exitApp() }
       ]);
-      return true;
+      // return true;
     };
 
-    const backHandler = BackHandler.addEventListener(
-      "hardwareBackPress",
-      backAction
-    );
+    // const backHandler = BackHandler.addEventListener(
+    //   "hardwareBackPress",
+    //   backAction
+    // );
 
-    return () => 
-    backHandler.remove();
+    // return () => 
+    // backHandler.remove();
   }, []);
   useEffect(() => { //Create Table 선언
     CREATE_USER_TABLE();

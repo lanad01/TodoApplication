@@ -1,4 +1,5 @@
 rootProject.name = 'TodoApp'
+include ':react--native-google-signin', ':app'
 include ':react-native-svg'
 project(':react-native-svg').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-svg/android')
 include ':react-native-vector-icons'
