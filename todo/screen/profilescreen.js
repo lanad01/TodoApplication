@@ -1,5 +1,5 @@
-import React from 'react';
-import { View,  Text, Image, TouchableOpacity} from 'react-native';
+import React, { useEffect, useCallback,  } from 'react';
+import { View,  Text, Image, TouchableOpacity, BackHandler, Alert} from 'react-native';
 import GestureRecognizer from 'react-native-swipe-gestures';
 import { AuthContext } from '../authcontext';
 import { styles } from './styles/profileScreenStyle';
@@ -12,6 +12,37 @@ export const Profile = ({ navigation }) => {
     console.log("GestureName :"+gestureName)
     if(gestureName==="SWIPE_LEFT") navigation.navigate("Task") //Swipe Left할 시 Screen.Task로 이동
   }
+  //Profile Screen에서 HardwareBackBtn을 눌렀을 시 발생하는 컨펌 Alert
+  const onBackPress = useCallback(() => {
+    Alert.alert('Exit the app', 'Do you want to exit the app?', [
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
+      {
+        text: 'Exit',
+        onPress: () => BackHandler.exitApp(),
+      },
+    ])
+    return true
+  }, [])
+
+  const goToEdit = () => {
+    //TaskList, Profile Screen 화면에서는 HardWareBackButton을 누를 시 Alert창을 출력
+    //하지만 Edit로 depth가 깊어지면서는 스택을 바탕으로한 뒤로가기버튼이 수행되도록 BackHEvent를 삭제
+    BackHandler.removeEventListener("hardwareBackPress",onBackPress)
+    console.log("삭제?")
+    navigation.push("ProfileEdit")
+  }
+  useEffect(() => { // 오로직 프로필 스크린에서만 BackHandler를 적용시켜보자
+    console.log("Profile Screen Mount") // 첨에만 발동 
+    const subscribe = navigation.addListener('focus', () => { //foucs될 때마다 발동 , 이게 핵심
+      console.log("백이벤트생성")
+      BackHandler.addEventListener("hardwareBackPress",onBackPress)
+    });
+    return subscribe;
+  }, [])
+
   return ( 
     <GestureRecognizer
       style={{ height:HEIGHT}}
@@ -27,7 +58,7 @@ export const Profile = ({ navigation }) => {
               style={styles.profileImage}/>
             <Text style={styles.nameText}> {authContext.name} </Text>
             <Text style={styles.emailText}> {authContext.email === null ? authContext.emailNull : authContext.email } </Text>
-            <TouchableOpacity onPress={ () => navigation.push("ProfileEdit") } style={styles.editBox}>
+            <TouchableOpacity onPress={goToEdit} style={styles.editBox}>
               <Text style={styles.editText }>  프로필 수정 </Text>
             </TouchableOpacity>
           </View>

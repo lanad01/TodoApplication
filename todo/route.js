@@ -10,26 +10,6 @@ import { CREATE_USER_TABLE } from "./sqliteConnection";
 
 
 export default () => {
-  useEffect(() => {
-    const backAction = () => {
-      Alert.alert("Hold on!", "앱을 종료하시겠습니까?", [
-        {
-          text: "취소",
-          onPress: () => null,
-        },
-        { text: "확인", onPress: () => BackHandler.exitApp() }
-      ]);
-      // return true;
-    };
-
-    // const backHandler = BackHandler.addEventListener(
-    //   "hardwareBackPress",
-    //   backAction
-    // );
-
-    // return () => 
-    // backHandler.remove();
-  }, []);
   useEffect(() => { //Create Table 선언
     CREATE_USER_TABLE();
     autoLogin()

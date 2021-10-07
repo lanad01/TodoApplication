@@ -21,7 +21,6 @@ import { IdPwdNotNullModal } from '../modal/IdPwdNotNullModal';
 import { ErrorModal } from '../modal/ErrorModal';
 import { DB } from '../sqliteConnection';
 import { styles } from './styles/authScreenStyle';
-import moment from 'moment';
 
 GoogleSignin.configure({});
 
@@ -33,7 +32,7 @@ export const authScreen = ({ navigation }) => {
     return () => {};
   }, []);
   //자동 로그인
-  const user_no = JSON.stringify(AsyncStorage.getItem('user_no'));
+  const user_no = AsyncStorage.getItem('user_no');
   console.log("Asyne remains?"+user_no)
   autoLogin = async () => {
     try {
@@ -67,10 +66,7 @@ export const authScreen = ({ navigation }) => {
           //
           let selected = res.rows;
           let user_no = selected.item(0).user_no;
-          AsyncStorage.setItem('user_no', JSON.stringify(user_no), () => {
-            // user_no 변수로 user_no값이 들어가 있는 user 저장
-            authContext.userLogined = user_no;
-          });
+          AsyncStorage.setItem('user_no', JSON.stringify(user_no))
           let id = selected.item(0).id;
           let pwd = selected.item(0).pwd;
           let name = selected.item(0).name;
@@ -121,7 +117,7 @@ export const authScreen = ({ navigation }) => {
   const getUser_no = () => {
     DB.transaction(tx => {
       tx.executeSql(
-        'SELECT id, pwd, name, email, job, regi_date, image, user_no FROM user_info WHERE id=?', // select all 조심 , 컬럼명 명시 권장
+        'SELECT id, pwd, name, email, job, regi_date, image, user_no FROM user_info WHERE id=?', 
         [id],
         (tx, res) => {
           //
@@ -147,12 +143,27 @@ export const authScreen = ({ navigation }) => {
           authContext.regi_date = regi_date;
           authContext.image = image;
           authContext.user_no = user_no;
-          //로긍인 완료 후 메인스크린으로 이동
-          navigation.push('MainScreen');
+          //로그인 완료 후 메인스크린으로 이동
+          navigation.replace('MainScreen');
+          // replace 새로운 스택route로 바꾸기 때문에 authScreen이 stack Index에 존재하지 않게 된다
         },
       );
     });
   };
+  const logout = async () => {
+    try {
+      const isSignedIn = await GoogleSignin.isSignedIn();
+      if (isSignedIn) {
+        console.log('gets here'); // LOGS THIS
+        await GoogleSignin.revokeAccess(); // GETS STUCK HERE
+        console.log('passed revoke access'); // doesn't log this
+        await GoogleSignin.signOut();
+        console.log('passed signOut');
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  }
   signIn = async () => {
     try{
       await GoogleSignin.hasPlayServices();
@@ -161,25 +172,31 @@ export const authScreen = ({ navigation }) => {
       // 처음엔 구글아이디로 로그인하고 해당 id와 일치하는 것이 존재한다면 
       // 그 아이디의 정보를 출력 
       GOOGLE_LOGIN(googleUserInfo)
+      // console.log(GET_USER_INFO_BY_GOOGLE_ID(googleUserInfo.user.email))
       DB.transaction(tx => {
         tx.executeSql(
             'SELECT id, pwd, name, email, job, regi_date, image, user_no FROM user_info WHERE id=?',
-            [id],
+            [userIdFromGoogle],
             (tx,res)=>{
                 console.log("GET USER INFO BY GG ID SUCCESS")
+                console.log(res.rows.item(0).id)
+                console.log(res.rows.item(0).email)
+                console.log(res.rows.item(0).user_no)
                 authContext.id=res.rows.item(0).id
                 authContext.pwd=res.rows.item(0).pwd
                 authContext.user_no=res.rows.item(0).user_no
+                AsyncStorage.setItem('user_no', JSON.stringify(res.rows.item(0).user_no))
                 authContext.name=res.rows.item(0).name
                 authContext.email=res.rows.item(0).email
                 authContext.job=res.rows.item(0).job
                 authContext.regi_date=res.rows.item(0).regi_date
+                navigation.replace("MainScreen") //replace로 login화면으로 돌아올 수 없도록 수정
             },error => {
                 console.log("GET USER INFO BY GG ID FAILED")
             }
         )
     })
-      navigation.navigate("MainScreen")
+      
     }catch(err){
       console.log(err);
     }
@@ -214,7 +231,7 @@ export const authScreen = ({ navigation }) => {
           <Text style={styles.loginBtn}> 로 그 인 </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={() => navigation.navigate('Assign')}
+          onPress={() => navigation.push('Assign')}
           style={styles.loginBtnContainer}>
           <Text style={styles.loginBtn}> 회 원 가 입</Text>
         </TouchableOpacity>
@@ -225,6 +242,12 @@ export const authScreen = ({ navigation }) => {
           size={GoogleSigninButton.Size.Wide}
           color={GoogleSigninButton.Color.Dark}
           style={{ width: 260, height: 60, marginRight:5, }}
+        />
+        <GoogleSigninButton
+          onPress={logout}
+          size={GoogleSigninButton.Size.Wide}
+          color={GoogleSigninButton.Color.Dark}
+          style={{ width: 260, height: 120, marginRight:5, }}
         />
       </View>
       <IdPwdNotNullModal

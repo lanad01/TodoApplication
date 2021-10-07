@@ -74,7 +74,6 @@ export const GOOGLE_LOGIN = userInfo => {
         if (count > 0) {
           console.log('Dup Exists');
         } else if (count == 0) {
-          console.log('pwd and inputpwd not matched');
           insertUserFromGoogle(name, email, id); //로그인 이력이 있는 구글ID가 아니라면 새로 Insert
         }
       },
@@ -109,34 +108,19 @@ export const GOOGLE_LOGIN = userInfo => {
   };
 };
 
-export const GET_USER_INFO_BY_GOOGLE_ID = id => {
-    const userInfo={
-        user_no:'',
-        id:'',
-        pwd:'',
-        name:'',
-        email:'',
-        job:'',
-        image:'',
-        regi_date:'',
-   }
-    DB.transaction(tx => {
-        tx.executeSql(
-            'SELECT id, pwd, name, email, job, regi_date, image, user_no FROM user_info WHERE id=?',
-            [id],
-            (tx,res)=>{
-                console.log("GET USER INFO BY GG ID SUCCESS")
-                userInfo.id=res.rows.item(0).id
-                userInfo.pwd=res.rows.item(0).pwd
-                userInfo.user_no=res.rows.item(0).user_no
-                userInfo.name=res.rows.item(0).name
-                userInfo.email=res.rows.item(0).email
-                userInfo.job=res.rows.item(0).job
-                userInfo.regi_date=res.rows.item(0).regi_date
-            },error => {
-                console.log("GET USER INFO BY GG ID FAILED")
-            }
-        )
-    })
-    return userInfo;
+export const GET_USER_INFO_BY_GOOGLE_ID = email => {
+  // const returnTest = () => {
+  //   DB.transaction(tx => {
+  //     tx.executeSql(
+  //         'DELETE FROM user_info WHERE email=?',
+  //         [email],
+  //         (tx,res)=>{
+  //             console.log("GET USER INFO BY GG ID SUCCESS")
+  //         },error => {
+  //             console.log("GET USER INFO BY GG ID FAILED")
+  //         }
+  //     )
+  // })
+  // }
+    
 }

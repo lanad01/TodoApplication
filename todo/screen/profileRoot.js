@@ -4,10 +4,11 @@ import { StyleSheet, BackHandler } from 'react-native';
 import ProfileEdit from './profileEdit';
 import { Profile } from './profilescreen';
 import { ResetPwd } from './resetPwd';
+import { useNavigation } from '@react-navigation/native';
 
-export const ProfileStackScreen = () => {
+export const ProfileRoot = () => {
   const ProfileStack = createStackNavigator();
-  
+  const navigation=useNavigation()
   return (
     <ProfileStack.Navigator initialRouteName="ProfileMain">
       <ProfileStack.Screen

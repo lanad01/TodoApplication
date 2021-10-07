@@ -10,13 +10,11 @@ import {
 } from 'react-native';
 
 import { styles } from './styles/tabsScreenStyle';
-import { BACK_ACTION } from '../alertCase';
 import { TodoContext } from '../todoContext';
-import { ProfileStackScreen } from './profileRoot';
+import { ProfileRoot } from './profileRoot';
 import { AuthContext } from '../authcontext';
 import { TaskScreen } from './taskList';
 import { DB, CREATE_TASK_TABLE } from '../sqliteConnection';
-import { LOGOUT } from '../common/logOutProcess';
 export const TabsScreen = props => {
   console.log('tabsScreen');
   const authContext = React.useContext(AuthContext);
@@ -73,7 +71,7 @@ export const TabsScreen = props => {
   }
   const logOutImple = () => {
     clearAuthContext()
-    props.navigation.navigate('Auth'); // 로그인화면
+    props.navigation.replace('Auth'); // 로그인화면
   }
   const profileScreen_Opt = () => {
     return {
@@ -127,7 +125,7 @@ export const TabsScreen = props => {
       <Tabs.Navigator initialRouteName="Profile">
         <Tabs.Screen
           name="Profile"
-          component={ProfileStackScreen}
+          component={ProfileRoot}
           options={profileScreen_Opt}
         />
         <Tabs.Screen
