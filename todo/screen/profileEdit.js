@@ -11,13 +11,6 @@ import { DB } from '../sqliteConnection';
 import { styles } from './styles/profileEditStyle';
 
 const ProfileEdit = ({ navigation }) => {
-  useEffect(() => {
-  BackHandler.removeEventListener("hardwareBackPress")
-    
-    return () => {
-      
-    }
-  }, [])
   const authContext = React.useContext(AuthContext);
   const [pictureSelected, setPicture] = useState(false);   //지정된 프로필이미지의 존재여부
   // 프로필 이미지 image.path From Crop Picker

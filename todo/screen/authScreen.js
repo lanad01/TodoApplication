@@ -5,35 +5,46 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  TouchableWithoutFeedback,
+  Image,
 } from 'react-native';
-import { AuthContext } from '../authcontext';
-import { Dimensions } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import {
   GoogleSignin,
   GoogleSigninButton,
   statusCodes,
 } from '@react-native-google-signin/google-signin';
+import {
+  getProfile as getKakaoProfile,
+  login as kakaoLogin,
+} from '@react-native-seoul/kakao-login';
 
-import { GOOGLE_LOGIN, GET_USER_INFO_BY_GOOGLE_ID } from '../sqliteConnection';
+import { AuthContext } from '../authcontext';
+import {  GOOGLE_LOGIN,  KAKAO_LOGIN, } from '../sqliteConnection';
 import { LoginErrorModal } from '../modal/loginErrorModal';
 import { IdPwdNotNullModal } from '../modal/IdPwdNotNullModal';
 import { ErrorModal } from '../modal/ErrorModal';
 import { DB } from '../sqliteConnection';
 import { styles } from './styles/authScreenStyle';
 
-GoogleSignin.configure({});
 
 export const authScreen = ({ navigation }) => {
-  const chartHeight = Dimensions.get('window').height;
-  const chartWidth = Dimensions.get('window').width;
+  const authContext = React.useContext(AuthContext);
+  const [loginErrorModal, setLoginErrorModal] = useState(false); //로그인 아이디 비밀번호 비일치 시
+  const [loginNotNullModal, setLoginNotNullModal] = useState(false); //로그인 아이디 비밀번호 null발생 시
+  const [pwdErrorModal, setPwdErrorModal] = useState(false); //비밀번호만 오류일 시
+
+  const [id, setId] = useState('Aldne');
+  const [pwd, setPwd] = useState('121212');
+
   useEffect(() => {
     autoLogin();
     return () => {};
   }, []);
+
   //자동 로그인
-  const user_no = AsyncStorage.getItem('user_no');
-  console.log("Asyne remains?"+user_no)
+  const user_no = JSON.stringify(AsyncStorage.getItem('user_no'));
+  console.log('AuthScreen : Asyne remains?' + user_no);
   autoLogin = async () => {
     try {
       const user_no = await AsyncStorage.getItem('user_no');
@@ -45,16 +56,9 @@ export const authScreen = ({ navigation }) => {
       } else {
         console.log('ASync Null Login Required');
       }
-    } catch (error) {}
+    } catch (error) { console.log("AuthScreen : GetAsync Failed"+error)}
   };
-
-  const authContext = React.useContext(AuthContext);
-  const [loginErrorModal, setLoginErrorModal] = useState(false);
-  const [loginNotNullModal, setLoginNotNullModal] = useState(false);
-  const [pwdErrorModal, setPwdErrorModal] = useState(false);
-
-  const [id, setId] = useState('Aldne');
-  const [pwd, setPwd] = useState('121212');
+  //자동로그인 종료
 
   const getInfoWhenAutoLogin = user_no => {
     DB.transaction(tx => {
@@ -63,30 +67,24 @@ export const authScreen = ({ navigation }) => {
         // select all 조심 , 컬럼명 명시 권장
         [user_no],
         (tx, res) => {
-          //
           let selected = res.rows;
-          let user_no = selected.item(0).user_no;
-          AsyncStorage.setItem('user_no', JSON.stringify(user_no))
-          let id = selected.item(0).id;
-          let pwd = selected.item(0).pwd;
-          let name = selected.item(0).name;
-          let email = selected.item(0).email;
-          let job = selected.item(0).job;
-          let regi_date = selected.item(0).regi_date;
-          let image = selected.item(0).image;
           // context 값 선언 방법 변경 권장 export
-          authContext.id = id;
-          authContext.pwd = pwd;
-          authContext.name = name;
-          authContext.email = email;
-          authContext.job = job;
-          authContext.regi_date = regi_date;
-          authContext.image = image;
-          authContext.user_no = user_no;
-        },
+          authContext.id = selected.item(0).id;
+          authContext.pwd = selected.item(0).pwd;
+          authContext.name = selected.item(0).name;
+          authContext.email = selected.item(0).email;
+          authContext.job =  selected.item(0).job;
+          authContext.regi_date = selected.item(0).regi_date;
+          authContext.image = selected.item(0).image;;
+          authContext.user_no = selected.item(0).user_no;
+          AsyncStorage.setItem('user_no', user_no);
+        },err => {
+          console.log("AuthScreen : Select userInfo from AutoLogin"+err)
+        }
       );
     });
   };
+  //일반 로그인 
   const login = () => {
     console.log('pwd : ' + pwd + ' id : ' + id);
     if (id === null || pwd === null) {
@@ -109,7 +107,12 @@ export const authScreen = ({ navigation }) => {
               setPwdErrorModal(true);
             }
           },
-          error => {},
+          error => {
+            console.log(
+              'Failed Select : 작성된 아이디와 패스워드가 일치하는 계정의 Count ' +
+                error,
+            );
+          },
         );
       });
     }
@@ -117,31 +120,20 @@ export const authScreen = ({ navigation }) => {
   const getUser_no = () => {
     DB.transaction(tx => {
       tx.executeSql(
-        'SELECT id, pwd, name, email, job, regi_date, image, user_no FROM user_info WHERE id=?', 
+        'SELECT id, pwd, name, email, job, regi_date, image, user_no FROM user_info WHERE id=?',
         [id],
         (tx, res) => {
-          //
           let selected = res.rows;
           let user_no = selected.item(0).user_no;
-          AsyncStorage.setItem('user_no', JSON.stringify(user_no), () => {
-            // user_no 변수로 user_no값이 들어가 있는 user 저장
-            authContext.userLogined = user_no;
-          });
-          let id = selected.item(0).id;
-          let pwd = selected.item(0).pwd;
-          let name = selected.item(0).name;
-          let email = selected.item(0).email;
-          let job = selected.item(0).job;
-          let regi_date = selected.item(0).regi_date;
-          let image = selected.item(0).image;
+          AsyncStorage.setItem('user_no', JSON.stringify(user_no));
           // context 값 선언 방법 변경 권장 export
-          authContext.id = id;
-          authContext.pwd = pwd;
-          authContext.name = name;
-          authContext.email = email;
-          authContext.job = job;
-          authContext.regi_date = regi_date;
-          authContext.image = image;
+          authContext.id = selected.item(0).id;
+          authContext.pwd = selected.item(0).pwd;
+          authContext.name = selected.item(0).name;
+          authContext.email = selected.item(0).email;
+          authContext.job = selected.item(0).job;
+          authContext.regi_date = selected.item(0).regi_date;
+          authContext.image = selected.item(0).image;
           authContext.user_no = user_no;
           //로그인 완료 후 메인스크린으로 이동
           navigation.replace('MainScreen');
@@ -150,65 +142,106 @@ export const authScreen = ({ navigation }) => {
       );
     });
   };
-  const logout = async () => {
+  
+  //googleLogin
+  loginWithGoogle = async () => {
+    GoogleSignin.configure({ }); //구글로그인 configure
+
     try {
-      const isSignedIn = await GoogleSignin.isSignedIn();
-      if (isSignedIn) {
-        console.log('gets here'); // LOGS THIS
-        await GoogleSignin.revokeAccess(); // GETS STUCK HERE
-        console.log('passed revoke access'); // doesn't log this
-        await GoogleSignin.signOut();
-        console.log('passed signOut');
-      }
+      await GoogleSignin.hasPlayServices();
+      const googleUserInfo = await GoogleSignin.signIn();
+      let userIdFromGoogle = googleUserInfo.user.id;
+      // 처음엔 구글아이디로 로그인하고 해당 id와 일치하는 것이 존재한다면
+      // 그 아이디의 정보를 출력
+      GOOGLE_LOGIN(googleUserInfo);
+      // console.log(GET_USER_INFO_BY_GOOGLE_ID(googleUserInfo.user.email))
+      await DB.transaction(tx => {
+        tx.executeSql(
+          'SELECT id, pwd, name, email, job, regi_date, image, user_no FROM user_info WHERE id=?',
+          [userIdFromGoogle],
+          (tx, res) => {
+            console.log('GET USER INFO BY GG ID SUCCESS');
+            console.log(res.rows.item(0).id);
+            console.log(res.rows.item(0).email);
+            console.log(res.rows.item(0).user_no);
+            authContext.id = res.rows.item(0).id;
+            authContext.pwd = res.rows.item(0).pwd;
+            authContext.user_no = res.rows.item(0).user_no;
+            AsyncStorage.setItem(
+              'user_no',
+              JSON.stringify(res.rows.item(0).user_no),
+            );
+            authContext.name = res.rows.item(0).name;
+            authContext.image = res.rows.item(0).image;
+            authContext.email = res.rows.item(0).email;
+            authContext.job = res.rows.item(0).job;
+            authContext.regi_date = res.rows.item(0).regi_date;
+            authContext.login_route = 'google';
+            navigation.replace('MainScreen'); //replace로 login화면으로 돌아올 수 없도록 수정
+          },
+          error => {
+            console.log('GET USER INFO BY GG ID FAILED');
+          },
+        );
+      });
     } catch (err) {
       console.log(err);
     }
-  }
-  signIn = async () => {
-    try{
-      await GoogleSignin.hasPlayServices();
-      const googleUserInfo = await GoogleSignin.signIn();
-      let userIdFromGoogle=googleUserInfo.user.id
-      // 처음엔 구글아이디로 로그인하고 해당 id와 일치하는 것이 존재한다면 
-      // 그 아이디의 정보를 출력 
-      GOOGLE_LOGIN(googleUserInfo)
-      // console.log(GET_USER_INFO_BY_GOOGLE_ID(googleUserInfo.user.email))
-      DB.transaction(tx => {
-        tx.executeSql(
+  };
+  //카카오 로그인
+  const loginWithKakao = async () => {
+    try {
+      const token = await kakaoLogin();
+      // console.log('KAkao login result : ' + JSON.stringify(token));
+      // console.log('TOKEN check at auth ' + token.accessToken);
+      if (token != null) {
+        // 카카오 로그인 성공
+        console.log('카카오 토큰 생성');
+        const userInfo = await getKakaoProfile();
+        KAKAO_LOGIN(userInfo);
+        let idFromKakao = userInfo.id;
+        await DB.transaction(tx => {
+          tx.executeSql(
             'SELECT id, pwd, name, email, job, regi_date, image, user_no FROM user_info WHERE id=?',
-            [userIdFromGoogle],
-            (tx,res)=>{
-                console.log("GET USER INFO BY GG ID SUCCESS")
-                console.log(res.rows.item(0).id)
-                console.log(res.rows.item(0).email)
-                console.log(res.rows.item(0).user_no)
-                authContext.id=res.rows.item(0).id
-                authContext.pwd=res.rows.item(0).pwd
-                authContext.user_no=res.rows.item(0).user_no
-                AsyncStorage.setItem('user_no', JSON.stringify(res.rows.item(0).user_no))
-                authContext.name=res.rows.item(0).name
-                authContext.email=res.rows.item(0).email
-                authContext.job=res.rows.item(0).job
-                authContext.regi_date=res.rows.item(0).regi_date
-                navigation.replace("MainScreen") //replace로 login화면으로 돌아올 수 없도록 수정
-            },error => {
-                console.log("GET USER INFO BY GG ID FAILED")
-            }
-        )
-    })
-      
-    }catch(err){
-      console.log(err);
+            [idFromKakao],
+            (tx, res) => {
+              console.log('카카오 아이디 조회 성공');
+              console.log(res.rows.item(0).id);
+              console.log(res.rows.item(0).email);
+              console.log(res.rows.item(0).user_no);
+              authContext.id = res.rows.item(0).id;
+              authContext.pwd = res.rows.item(0).pwd;
+              authContext.user_no = res.rows.item(0).user_no;
+              AsyncStorage.setItem(
+                'user_no',
+                JSON.stringify(res.rows.item(0).user_no),
+              );
+              authContext.name = res.rows.item(0).name;
+              authContext.image = res.rows.item(0).image;
+              authContext.email = res.rows.item(0).email;
+              authContext.job = res.rows.item(0).job;
+              authContext.regi_date = res.rows.item(0).regi_date;
+              authContext.login_route = 'kakao';
+              navigation.replace('MainScreen'); //replace로 login화면으로 돌아올 수 없도록 수정
+            },
+            err => {
+              console.log('Kakao login Select Userinfo Failed');
+            },
+          );
+        });
+      } else if (token == null) {
+        console.log('Kakao Token Null');
+      }
+    } catch (err) {
+      console.log('KaKao Login Error' + err);
     }
   };
- 
   return (
     <SafeAreaView
       style={{
+        flex:1,
         backgroundColor: '#191970',
         alignItems: 'center',
-        width: chartWidth,
-        height: chartHeight,
       }}>
       <Text style={styles.headerText}> TO DO LIST</Text>
       <View style={styles.bodyContainer}>
@@ -238,17 +271,22 @@ export const authScreen = ({ navigation }) => {
         <Text style={styles.showText}></Text>
         <Text style={styles.showText}></Text>
         <GoogleSigninButton
-          onPress={signIn}
+          onPress={loginWithGoogle}
           size={GoogleSigninButton.Size.Wide}
           color={GoogleSigninButton.Color.Dark}
-          style={{ width: 260, height: 60, marginRight:5, }}
+          style={{ width: 260, height: 45, marginRight: 5 }}
         />
-        <GoogleSigninButton
-          onPress={logout}
-          size={GoogleSigninButton.Size.Wide}
-          color={GoogleSigninButton.Color.Dark}
-          style={{ width: 260, height: 120, marginRight:5, }}
-        />
+        <TouchableWithoutFeedback onPress={loginWithKakao}>
+          <Image
+            source={require('../assets/kakao_login_medium_wide.png')}
+            style={{
+              width: 260,
+              height: 40,
+              marginTop: 10,
+              resizeMode: 'contain',
+            }}
+          />
+        </TouchableWithoutFeedback>
       </View>
       <IdPwdNotNullModal
         modalOn={loginNotNullModal}

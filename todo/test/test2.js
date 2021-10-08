@@ -6,6 +6,16 @@ import {
   statusCodes,
   GoogleSignInOptions,
 } from '@react-native-google-signin/google-signin';
+
+import {
+  KakaoOAuthToken,
+  KakaoProfile,
+  getProfile as getKakaoProfile,
+  login,
+  logout,
+  unlink,
+} from '@react-native-seoul/kakao-login';
+import { login } from '@react-native-seoul/kakao-login'
 GoogleSignin.configure({
 });
 export default function App() {
@@ -63,6 +73,12 @@ export default function App() {
           <Text style={{backgroundColor:'yellow', width:100, height:100}}>Logout</Text>
         </View>
       </TouchableOpacity>
+      <TouchableOpacity onPress={login} >
+        <View>
+          <Text style={{backgroundColor:'yellow', width:100, height:100, justifyContent: 'center', marginLeft:100, borderColor:'black', borderWidth:10}}>KKao login</Text>
+        </View>
+      </TouchableOpacity>
+      
     </View>
   );
 }

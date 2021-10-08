@@ -12,35 +12,20 @@ import { CREATE_USER_TABLE } from "./sqliteConnection";
 export default () => {
   useEffect(() => { //Create Table 선언
     CREATE_USER_TABLE();
-    autoLogin()
   }, []
   );
-  autoLogin = async () => {
-    try{
-      console.log("autoLogin From route")
-      const user_no = await AsyncStorage.getItem("user_no")
-      if(value!=null){
-        console.log("Async Value :"+user_no)
-        authContext.user_no=value;
-        getInfoWhenAutoLogin(user_no)
-        navigation.navigate("MainScreen")
-      }else{
-        console.log("ASync Null Login Required")
-      }
-    }catch(error){
-      console.log("AutoLogin Error"+error)
-    }
-  }
-
   const authContext=React.useContext(AuthContext);
   const opt = () => { return {
     animationEnabled: false, headerTitleStyle: { fontFamily:"BMJUA"}, 
     headerShown:false, headerStyle: { backgroundColor: '#E0ffff' }}}
   
   const MainStack=createStackNavigator();
+  const linking = {
+    prefixes: ['https://localhost:8001/'],
+  };
   return (
     <AuthContext.Provider value={authContext}>
-      <NavigationContainer>
+      <NavigationContainer linking={linking}>
         <MainStack.Navigator initialRouteName="Auth" headerShown={false}>
           <MainStack.Screen name="MainScreen" component={TabsScreen} options={opt} /> 
           <MainStack.Screen name="Auth" component={authScreen} options={opt} />

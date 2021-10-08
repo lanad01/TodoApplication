@@ -5,8 +5,6 @@ import {
   Alert,
   Text,
   TouchableOpacity,
-  BackHandler,
-  Keyboard,
 } from 'react-native';
 
 import { styles } from './styles/tabsScreenStyle';
@@ -15,12 +13,17 @@ import { ProfileRoot } from './profileRoot';
 import { AuthContext } from '../authcontext';
 import { TaskScreen } from './taskList';
 import { DB, CREATE_TASK_TABLE } from '../sqliteConnection';
+import { unlink } from '@react-native-seoul/kakao-login';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
+
 export const TabsScreen = props => {
   console.log('tabsScreen');
   const authContext = React.useContext(AuthContext);
   const todoContext = React.useContext(TodoContext);
   const [getLengthForBadge, setLength] = useState(); //Task 갯수
-  const [taskListWritten, setTaskListWritten] = useState(false); //TaskList 확인 여부
+  
+  //TaskList 확인 여부 - true : Badge 숫자를 0으로
+  const [taskListWritten, setTaskListWritten] = useState(false); 
 
   useEffect(() => {
     const unsubscribe = props.navigation.addListener('focus', () => {
@@ -32,7 +35,6 @@ export const TabsScreen = props => {
           [authContext.user_no],
           (tx, res) => {
             let count = res.rows.item(0).count;
-            console.log('COunt in Badge Query' + count);
             setLength(count); // 출력된 count를 뱃지 개수 state로
           },
         );
@@ -50,6 +52,7 @@ export const TabsScreen = props => {
     authContext.email = null;
     authContext.regi_date = null;
     authContext.image = null;
+    authContext.login_route = null;
   };
   function logOutConfirm() {
     Alert.alert(
@@ -63,16 +66,38 @@ export const TabsScreen = props => {
         },
         {
           text: '예',
-          onPress: () => logOutImple()
+          onPress: () => logOutImple(),
         },
       ],
       { cancelable: false },
     );
   }
-  const logOutImple = () => {
-    clearAuthContext()
+  const logOutImple = async () => {
+    console.log('로그인 루트 ?' + authContext.login_route);
+    if (authContext.login_route == null || authContext.login_route==undefined) {
+      console.log('로그아웃 / 일반유저');
+    } else if (authContext.login_route == 'google') {
+      console.log('로그아웃 / 구글유저');
+      try {
+        const isSignedIn = await GoogleSignin.isSignedIn();
+        if (isSignedIn) {
+          console.log('gets here'); // LOGS THIS
+          await GoogleSignin.revokeAccess(); // GETS STUCK HERE
+          console.log('passed revoke access'); // doesn't log this
+          await GoogleSignin.signOut();
+          console.log('passed signOut');
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    } else if (authContext.login_route == 'kakao') {
+      console.log('로그아웃 / 카카오유저');
+      const message = await unlink();
+      console.log('링크해제 카카오 메시지' + message);
+    }
+    clearAuthContext();
     props.navigation.replace('Auth'); // 로그인화면
-  }
+  };
   const profileScreen_Opt = () => {
     return {
       tabBarActiveTintColor: '#00af9d',
