@@ -18,6 +18,7 @@ export const Profile = ({ navigation }) => {
       {
         text: 'Cancel',
         style: 'cancel',
+        onPress : () => null
       },
       {
         text: 'Exit',

@@ -15,6 +15,7 @@ import { TaskScreen } from './taskList';
 import { DB, CREATE_TASK_TABLE } from '../sqliteConnection';
 import { unlink } from '@react-native-seoul/kakao-login';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import AsyncStorage from '@react-native-community/async-storage';
 
 export const TabsScreen = props => {
   console.log('tabsScreen');
@@ -96,7 +97,8 @@ export const TabsScreen = props => {
       console.log('링크해제 카카오 메시지' + message);
     }
     clearAuthContext();
-    props.navigation.replace('Auth'); // 로그인화면
+    AsyncStorage.removeItem('user_no')
+    props.navigation.navigate('Auth'); // 로그인화면
   };
   const profileScreen_Opt = () => {
     return {

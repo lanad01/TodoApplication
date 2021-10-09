@@ -43,20 +43,19 @@ export const authScreen = ({ navigation }) => {
   }, []);
 
   //자동 로그인
-  const user_no = JSON.stringify(AsyncStorage.getItem('user_no'));
+  const user_no = AsyncStorage.getItem('user_no');
   console.log('AuthScreen : Asyne remains?' + user_no);
   autoLogin = async () => {
     try {
       const user_no = await AsyncStorage.getItem('user_no');
-      if (value != null) {
-        console.log('Async Value :' + user_no);
-        authContext.user_no = value;
+      // console.log("userNo : "+user_no)
+      if (user_no != null) {
+        console.log('AuthScreen / AutoLogin / Async Value :' + user_no);
         getInfoWhenAutoLogin(user_no);
-        navigation.navigate('MainScreen');
       } else {
-        console.log('ASync Null Login Required');
+        console.log('AuthScreen / AutoLogin : Async Null Login Required');
       }
-    } catch (error) { console.log("AuthScreen : GetAsync Failed"+error)}
+    } catch (error) { console.log("AuthScreen / AutoLogin : GetAsync Failed"+error)}
   };
   //자동로그인 종료
 
@@ -78,6 +77,7 @@ export const authScreen = ({ navigation }) => {
           authContext.image = selected.item(0).image;;
           authContext.user_no = selected.item(0).user_no;
           AsyncStorage.setItem('user_no', user_no);
+          navigation.replace('MainScreen');
         },err => {
           console.log("AuthScreen : Select userInfo from AutoLogin"+err)
         }
@@ -146,7 +146,6 @@ export const authScreen = ({ navigation }) => {
   //googleLogin
   loginWithGoogle = async () => {
     GoogleSignin.configure({ }); //구글로그인 configure
-
     try {
       await GoogleSignin.hasPlayServices();
       const googleUserInfo = await GoogleSignin.signIn();
@@ -170,7 +169,7 @@ export const authScreen = ({ navigation }) => {
             AsyncStorage.setItem(
               'user_no',
               JSON.stringify(res.rows.item(0).user_no),
-            );
+            );            
             authContext.name = res.rows.item(0).name;
             authContext.image = res.rows.item(0).image;
             authContext.email = res.rows.item(0).email;
